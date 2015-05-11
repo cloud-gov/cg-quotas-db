@@ -1,5 +1,5 @@
 # Quota Database App
-Stores Cloud Foundry quotas in database.
+Lightweight Flask app for storing Cloud Foundry quotas data
 
 ## Setup
 This project was desgined to work with Python 3
