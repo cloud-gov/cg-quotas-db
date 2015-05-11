@@ -1,0 +1,6 @@
+---
+# all applications use these settings and services
+memory: 512m
+applications:
+- name: quotas-db
+  stack: lucid64
