@@ -1,8 +1,6 @@
 ---
 # all applications use these settings and services
 memory: 512m
-instances: 1
 applications:
-- name: quotas
-  path: .
-  timeout: 180
+- name: quotas-db
+  stack: lucid64
