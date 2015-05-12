@@ -41,14 +41,18 @@ class CloudFoundry:
         token = self.prepare_token()
         url = 'https://api.{0}/{1}'.format(self.url, endpoint)
         headers = {'authorization': 'bearer ' + token}
-        r = requests.get(url=url, headers=headers)
-        return r
+        req = requests.get(url=url, headers=headers)
+        return req
+
+    def yield_request(self, endpoint):
+        """ Yield all of the request pages """
+        while endpoint:
+            req = self.make_request(endpoint=endpoint).json()
+            endpoint = req.get('next_url')
+            yield req
 
     def get_quotas(self):
         """ Get quota definitions """
-        r = self.make_request(endpoint='v2/quota_definitions')
-        return r.json()
-
-    def get_quota_details(self, endpoint):
-        r = self.make_request(endpoint=endpoint)
-        return r.json()
+        req_iterator = self.yield_request(endpoint='v2/quota_definitions')
+        for req in req_iterator:
+            yield req
