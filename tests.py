@@ -1,33 +1,35 @@
+# Extral Imports
+from unittest import mock
+from flask.ext.testing import TestCase
 import copy
 import datetime
 import requests
+import types
 import unittest
 
-from flask.ext.testing import TestCase
-from unittest import mock
-
+# App imports
 from cloudfoundry import CloudFoundry
 from quotas import app, db
-from models import Org
+from models import Quota, QuotaData
 import scripts
 
-mock_org = {
+mock_quota = {
     'metadata': {
         'created_at': '2015-01-01T01:01:01Z',
-        'guid': 'test_org',
+        'guid': 'test_quota',
         'total_routes': 5,
         'updated_at': '2015-01-01T01:01:01Z',
         'url': '/v2/quota_definitions/test'
     },
     'entity': {
-        'name': 'test_org_name',
+        'name': 'test_quota_name',
         'memory_limit': 1875,
         'total_routes': 5,
         'total_services': 1,
     }
 }
-mock_org_2 = copy.deepcopy(mock_org)
-mock_org_2['metadata']['guid'] = 'test_org_2'
+mock_quota_2 = copy.deepcopy(mock_quota)
+mock_quota_2['metadata']['guid'] = 'test_quota_2'
 
 
 class MockTokenReq:
@@ -39,7 +41,10 @@ class MockTokenReq:
 class MockGetReq:
     """ Returns a mock token in json form """
     def json():
-        return {'resources': [mock_org, mock_org_2]}
+        return {
+            'next_url': None,
+            'resources': [mock_quota, mock_quota_2]
+        }
 
 
 def mock_token(func):
@@ -62,69 +67,58 @@ class CloudFoundryTest(unittest.TestCase):
     """ Test CloudFoundry client """
 
     @mock_token
-    def test_init(self):
-        """ Test that CloudFoundry object initializes properly """
-
-        cf = CloudFoundry(
+    def setUp(self):
+        self.cf = CloudFoundry(
             url='api.test.com',
             username='mockusername@mock.com',
             password='******')
-        self.assertEqual(cf.url, 'api.test.com')
-        self.assertEqual(cf.username, 'mockusername@mock.com')
-        self.assertEqual(cf.password, '******')
-        self.assertEqual(cf.token['access_token'], '999')
-        self.assertEqual(cf.token['expires_in'], 0)
+
+    @mock_token
+    def test_init(self):
+        """ Test that CloudFoundry object initializes properly """
+
+        self.assertEqual(self.cf.url, 'api.test.com')
+        self.assertEqual(self.cf.username, 'mockusername@mock.com')
+        self.assertEqual(self.cf.password, '******')
+        self.assertEqual(self.cf.token['access_token'], '999')
+        self.assertEqual(self.cf.token['expires_in'], 0)
 
     @mock_token
     def test_prepare_token(self):
         """ Test that token is prepared properly to make api call """
-
-        # Check that token is prepared
-        cf = CloudFoundry(
-            url='api.test.com',
-            username='mockusername@mock.com',
-            password='******')
-        token = cf.prepare_token()
+        token = self.cf.prepare_token()
         self.assertEqual(token, '999')
 
-        # Check that token is renewed
-        old_token_time = cf.token['time_stamp']
-        token = cf.prepare_token()
-        new_token_time = cf.token['time_stamp']
+    @mock_token
+    def test_token_renewed(self):
+        """ Check that token is renewed """
+        old_token_time = self.cf.token['time_stamp']
+        self.cf.prepare_token()
+        new_token_time = self.cf.token['time_stamp']
         self.assertNotEqual(old_token_time, new_token_time)
 
     @mock_token
     @mock_get_request
-    def test_mock_get_request(self):
+    def test_make_request(self):
         """ Check that calling api works properly """
-        cf = CloudFoundry(
-            url='api.test.com',
-            username='mockusername@mock.com',
-            password='******')
-        get_req = cf.make_request('http://api.test.com')
+        get_req = self.cf.make_request('http://api.test.com')
         self.assertEqual(len(get_req.json()['resources']), 2)
 
     @mock_token
     @mock_get_request
     def test_get_quotas(self):
         """ Test that quotas are obtained properly """
-        cf = CloudFoundry(
-            url='api.test.com',
-            username='mockusername@mock.com',
-            password='******')
-        quotas = cf.get_quotas()
-        self.assertEqual(len(quotas['resources']), 2)
+        quotas = list(self.cf.get_quotas())
+        self.assertEqual(len(quotas[0]['resources']), 2)
 
     @mock_token
     @mock_get_request
-    def test_get_quota_details(self):
-        """ Test that quota details for a specific org are obtained """
-        cf = CloudFoundry(
-            url='api.test.com',
-            username='mockusername@mock.com',
-            password='******')
-        quotas = cf.get_quota_details('v2/api/org2')
-        self.assertEqual(len(quotas['resources']), 2)
+    def test_yield_request(self):
+        """ Test that yield_request produces a generator that iterates through
+        pages """
+        quotas = self.cf.yield_request('v2/quota_definitions/quota_guid')
+        self.assertTrue(isinstance(quotas, types.GeneratorType))
+        self.assertEqual(len(list(quotas)[0]['resources']), 2)
 
 
 class DatabaseTest(TestCase):
@@ -145,81 +139,120 @@ class DatabaseTest(TestCase):
         db.session.remove()
         db.drop_all()
 
-    def test_create_org(self):
-        """ Check that org is created properly """
-        new_org = Org(guid='test_guid', name='test_name', url='test_url')
-        new_org.memory_limit = 100
-        new_org.total_routes = 1000
-        new_org.total_services = 1
-        new_org.created_at = datetime.datetime(2014, 1, 1)
-        new_org.updated_at = datetime.datetime(2015, 1, 1)
-
-        db.session.add(new_org)
+    def test_create_quota(self):
+        """ Check that quota is created properly """
+        # Create quota
+        new_quota = Quota(guid='test_guid', name='test_name', url='test_url')
+        new_quota.created_at = datetime.datetime(2014, 1, 1)
+        new_quota.updated_at = datetime.datetime(2015, 1, 1)
+        db.session.add(new_quota)
         db.session.commit()
-        org = Org.query.filter_by(guid='test_guid').first()
-        self.assertEqual(org.name, 'test_name')
-        self.assertEqual(org.url, 'test_url')
-        self.assertEqual(org.date_collected.day, datetime.date.today().day)
-        self.assertEqual(org.memory_limit, 100)
-        self.assertEqual(org.total_routes, 1000)
-        self.assertEqual(org.total_services, 1)
-        self.assertEqual(org.created_at.day, 1)
-        self.assertEqual(org.updated_at.day, 1)
+        # Find quota in database
+        quota = Quota.query.filter_by(guid='test_guid').first()
+        self.assertEqual(quota.name, 'test_name')
+        self.assertEqual(quota.url, 'test_url')
+        self.assertEqual(quota.created_at.day, 1)
+        self.assertEqual(quota.updated_at.day, 1)
 
     def test_primary_key_constraint(self):
-        """ Test that unique constraint is a composite of guid and date """
-        # Adding two instances of the same Org with different dates
-        new_org = Org(guid='test_guid', name='test_name', url='test_url')
-        new_org.date_collected = datetime.datetime(2014, 1, 1)
-        db.session.add(new_org)
-        new_org = Org(guid='test_guid', name='test_name', url='test_url')
-        db.session.merge(new_org)
+        """ Test that only one instance of a quota can be created """
+        # Adding two instances of the same Quota with same dates
+        new_quota = Quota(guid='test_guid', name='test_name', url='test_url')
+        db.session.add(new_quota)
+        new_quota = Quota(guid='test_guid', name='test_name', url='test_url')
+        db.session.merge(new_quota)
         db.session.commit()
-        # Getting data from org
-        orgs = Org.query.filter_by(guid='test_guid').all()
-        self.assertEqual(len(orgs), 2)
+        # Getting data from quota
+        quotas = Quota.query.filter_by(guid='test_guid').all()
+        self.assertEqual(len(quotas), 1)
 
-    def test_primary_key_constraint_single(self):
-        """ Test that unique constraint is a composite of guid and date """
-        # Adding two instances of the same Org with same dates
-        new_org = Org(guid='test_guid', name='test_name', url='test_url')
-        db.session.add(new_org)
-        new_org = Org(guid='test_guid', name='test_name', url='test_url')
-        db.session.merge(new_org)
+    def test_details(self):
+        """ Check that the details function returns dict of the quota """
+        new_quota = Quota(guid='test_guid', name='test_name', url='test_url')
+        db.session.add(new_quota)
         db.session.commit()
-        # Getting data from org
-        orgs = Org.query.filter_by(guid='test_guid').all()
-        self.assertEqual(len(orgs), 1)
-
-    def test_display(self):
-        """ Check that the display function returns dict """
-        new_org = Org(guid='test_guid', name='test_name', url='test_url')
-        db.session.add(new_org)
-        db.session.commit()
-        org_dict = new_org.display()
-        self.assertEqual(org_dict['guid'], 'test_guid')
-        self.assertEqual(org_dict['name'], 'test_name')
+        quota_dict = new_quota.details()
+        self.assertEqual(
+            sorted(list(quota_dict.keys())),
+            ['created_at', 'guid', 'name', 'updated_at', 'url'])
 
     def test_list_one(self):
-        """ Check that list one function returns dict of one org """
-        new_org = Org(guid='test_guid', name='test_name', url='test_url')
-        db.session.add(new_org)
+        """ Check that list one function returns dict of one quota """
+        new_quota = Quota(guid='test_guid', name='test_name', url='test_url')
+        db.session.add(new_quota)
         db.session.commit()
-        one_org = Org.list_one(guid='test_guid')[0]
-        self.assertEqual(one_org['guid'], 'test_guid')
-        self.assertEqual(one_org['name'], 'test_name')
+        one_quota = Quota.list_one(guid='test_guid')
+        self.assertEqual(one_quota['guid'], 'test_guid')
+        self.assertEqual(one_quota['name'], 'test_name')
 
     def test_list_all(self):
-        """ Check that list all function returns dict of multiple orgs """
-        new_org = Org(guid='test_guid', name='test_name', url='test_url')
-        db.session.add(new_org)
-        new_org = Org(guid='test_guid_2', name='test_name_2', url='test_url_2')
-        db.session.add(new_org)
+        """ Check that list all function returns dict of multiple quotas """
+        new_quota = Quota(guid='guid', name='test_name', url='test_url')
+        db.session.add(new_quota)
+        new_quota = Quota(guid='guid2', name='test_name_2', url='test_url_2')
+        db.session.add(new_quota)
         db.session.commit()
-        orgs = Org.list_all()
-        self.assertEqual(len(orgs), 2)
-        self.assertEqual(orgs[0]['guid'], 'test_guid')
-        self.assertEqual(orgs[1]['guid'], 'test_guid_2')
+        quotas = Quota.list_all()
+        self.assertEqual(len(quotas), 2)
+        self.assertEqual(quotas[0]['guid'], 'guid')
+        self.assertEqual(quotas[1]['guid'], 'guid2')
+
+    def test_quota_data(self):
+        """ Check that quota data can be added """
+        # Creating Quota and QuotaData
+        new_quota = Quota(guid='guid', name='test_name', url='test_url')
+        db.session.add(new_quota)
+        quota_data = QuotaData(new_quota)
+        quota_data.memory_limit = 1
+        quota_data.total_routes = 2
+        quota_data.total_services = 3
+        new_quota.data.append(quota_data)
+        db.session.commit()
+        # Retrieve QuotaData
+        quota = Quota.query.filter_by(guid='guid').first()
+        self.assertEqual(quota.name, 'test_name')
+        self.assertEqual(len(list(quota.data)), 1)
+        self.assertEqual(quota.data[0].memory_limit, 1)
+        self.assertEqual(quota.data[0].total_routes, 2)
+        self.assertEqual(quota.data[0].total_services, 3)
+
+    def test_primary_key_constraints_for_quotadata(self):
+        """ Check that the PrimaryKeyConstraints work for QuotaData """
+        failed = False
+        new_quota = Quota(guid='guid', name='test_name', url='test_url')
+        db.session.add(new_quota)
+        quota_data = QuotaData(new_quota)
+        quota_data_2 = QuotaData(new_quota)
+        new_quota.data.append(quota_data)
+        new_quota.data.append(quota_data_2)
+        try:
+            db.session.commit()
+        except:
+            failed = True
+        self.assertTrue(failed)
+
+    def test_quota_data_one_to_many(self):
+        """ Check that the relationship between Quota and QuotaData is
+        one to many """
+        # Creating Quota and 2 instances QuotaData with diff. dates
+        new_quota = Quota(guid='guid', name='test_name', url='test_url')
+        db.session.add(new_quota)
+        quota_data = QuotaData(new_quota)
+        quota_data.date_collected = datetime.date(2015, 1, 1)
+        quota_data_2 = QuotaData(new_quota)
+        new_quota.data.append(quota_data)
+        new_quota.data.append(quota_data_2)
+        db.session.commit()
+        # Retrieve QuotaData
+        quota = Quota.query.filter_by(guid='guid').first()
+        self.assertEqual(len(list(quota.data)), 2)
+
+    '''
+    def test_data_details(self):
+        """ Check that data function returns quota data for a specific
+        month """
+        self.assertEqual('Fail', 'Finish')
+    '''
 
 
 class QuotaAppTest(TestCase):
@@ -236,10 +269,10 @@ class QuotaAppTest(TestCase):
     @classmethod
     def setUpClass(cls):
         db.create_all()
-        new_org = Org(guid='test_guid', name='test_name', url='test_url')
-        db.session.add(new_org)
-        new_org = Org(guid='test_guid_2', name='test_name_2', url='test_url_2')
-        db.session.add(new_org)
+        new_quota = Quota(guid='guid', name='test_name', url='test_url')
+        db.session.add(new_quota)
+        new_quota = Quota(guid='guid_2', name='test_name_2', url='test_url_2')
+        db.session.add(new_quota)
         db.session.commit()
 
     @classmethod
@@ -257,17 +290,17 @@ class QuotaAppTest(TestCase):
         response = self.client.get("/api/")
         self.assertEqual(response.status_code, 200)
 
-    def test_api_orgs_page(self):
-        """ Test the orgs list page """
-        response = self.client.get("/api/orgs")
+    def test_api_quotas_page(self):
+        """ Test the quota list page """
+        response = self.client.get("/api/quotas")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json['Orgs']), 2)
+        self.assertEqual(len(response.json['Quotas']), 2)
 
-    def test_api_org_detail_page(self):
-        """ Test the org details page """
-        response = self.client.get("/api/org/test_guid")
+    def test_api_quota_detail_page(self):
+        """ Test the quota details page """
+        response = self.client.get("/api/quotas/guid")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json['Org']), 1)
+        self.assertTrue('guid' in response.json.keys())
 
 
 class LoadingTest(TestCase):
@@ -296,20 +329,24 @@ class LoadingTest(TestCase):
         new_data = scripts.get_datetime(date)
         self.assertEqual(new_data, datetime.date(2015, 1, 1))
 
+    '''
+    def test_get_or_create(self):
+        """ Test that get_or_create function works properly """
+
     def test_update_quota(self):
         """ Test that function inserts quota into database """
-        scripts.update_quota(mock_org)
-        org = Org.query.filter_by(guid='test_org').first()
-        self.assertEqual(org.name, 'test_org_name')
-        self.assertEqual(org.memory_limit, 1875)
+        scripts.update_quota(mock_quota)
+        quota = Quota.query.filter_by(guid='test_quota').first()
+        self.assertEqual(quota.name, 'test_quota_name')
 
     @mock_token
     @mock_get_request
     def test_load_quotas(self):
         """ Test that function loads multiple quotas """
         scripts.load_quotas()
-        orgs = Org.query.order_by().all()
-        self.assertEqual(len(orgs), 2)
+        quota = Quota.query.order_by().all()
+        self.assertEqual(len(quota), 2)
+    '''
 
 if __name__ == "__main__":
     unittest.main()
