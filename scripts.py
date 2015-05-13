@@ -41,13 +41,11 @@ def update_quota(quota):
         guid=quota['metadata']['guid'],
         name=quota['entity']['name'],
         url=quota['metadata']['url'])
-    '''
     quota_model.created_at = get_datetime(quota['metadata']['created_at'])
     updated = quota['metadata'].get('updated_at')
     if updated:
         quota_model.updated_at = get_datetime(updated)
     update_quota_data(quota_model=quota_model, entity_data=quota['entity'])
-    '''
     db.session.merge(quota_model)
     db.session.commit()
 

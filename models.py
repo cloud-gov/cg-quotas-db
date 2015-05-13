@@ -9,7 +9,7 @@ class QuotaData(db.Model):
     __tablename__ = 'data'
 
     quota = db.Column(db.String, db.ForeignKey('quota.guid'))
-    date_collected = db.Column(db.DateTime())
+    date_collected = db.Column(db.Date())
     memory_limit = db.Column(db.Integer())
     total_routes = db.Column(db.Integer())
     total_services = db.Column(db.Integer())
@@ -24,6 +24,16 @@ class QuotaData(db.Model):
 
     def __repr__(self):
         return '<guid {0} date {1}>'.format(self.quota, self.date_collected)
+
+    def details(self):
+        """ Displays QuotaData in dict format """
+        return {
+            'quota_guid': self.quota,
+            'date_collected': str(self.date_collected),
+            'memory_limit': self.memory_limit,
+            'total_routes': self.total_routes,
+            'total_services': self.total_services,
+        }
 
 
 class Quota(db.Model):
@@ -56,23 +66,30 @@ class Quota(db.Model):
             'updated_at': self.updated_at
         }
 
-    def data_details(self):
-        """ Displays Quota in dict format """
+    def data_details(self, start_date=None, end_date=None):
+        """ Displays Quota in dict format with data details """
+        quota_data = QuotaData.query.filter_by(quota=self.guid)
+        if start_date and end_date:
+            quota_data = quota_data.filter(
+                QuotaData.date_collected.between(start_date, end_date))
+        quota_data = quota_data.order_by(QuotaData.date_collected).all()
+        data = [item.details() for item in quota_data]
         return {
             'guid': self.guid,
             'name': self.name,
             'url': self.url,
             'created_at': self.created_at,
             'updated_at': self.updated_at,
+            'data': data
         }
 
     # Resources
     @classmethod
-    def list_one(cls, guid):
+    def list_one(cls, guid, start_date=None, end_date=None):
         """ List one quota and all dates """
         quota = cls.query.filter_by(guid=guid).first()
         if quota:
-            return quota.details()
+            return quota.data_details(start_date=start_date, end_date=end_date)
 
     @classmethod
     def list_all(cls):

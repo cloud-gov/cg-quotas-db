@@ -143,16 +143,16 @@ class DatabaseTest(TestCase):
         """ Check that quota is created properly """
         # Create quota
         new_quota = Quota(guid='test_guid', name='test_name', url='test_url')
-        new_quota.created_at = datetime.datetime(2014, 1, 1)
-        new_quota.updated_at = datetime.datetime(2015, 1, 1)
+        new_quota.created_at = datetime.date(2014, 1, 1)
+        new_quota.updated_at = datetime.date(2015, 1, 1)
         db.session.add(new_quota)
         db.session.commit()
         # Find quota in database
         quota = Quota.query.filter_by(guid='test_guid').first()
         self.assertEqual(quota.name, 'test_name')
         self.assertEqual(quota.url, 'test_url')
-        self.assertEqual(quota.created_at.day, 1)
-        self.assertEqual(quota.updated_at.day, 1)
+        self.assertEqual(quota.created_at, datetime.datetime(2014, 1, 1))
+        self.assertEqual(quota.updated_at, datetime.datetime(2015, 1, 1))
 
     def test_primary_key_constraint(self):
         """ Test that only one instance of a quota can be created """
@@ -175,27 +175,6 @@ class DatabaseTest(TestCase):
         self.assertEqual(
             sorted(list(quota_dict.keys())),
             ['created_at', 'guid', 'name', 'updated_at', 'url'])
-
-    def test_list_one(self):
-        """ Check that list one function returns dict of one quota """
-        new_quota = Quota(guid='test_guid', name='test_name', url='test_url')
-        db.session.add(new_quota)
-        db.session.commit()
-        one_quota = Quota.list_one(guid='test_guid')
-        self.assertEqual(one_quota['guid'], 'test_guid')
-        self.assertEqual(one_quota['name'], 'test_name')
-
-    def test_list_all(self):
-        """ Check that list all function returns dict of multiple quotas """
-        new_quota = Quota(guid='guid', name='test_name', url='test_url')
-        db.session.add(new_quota)
-        new_quota = Quota(guid='guid2', name='test_name_2', url='test_url_2')
-        db.session.add(new_quota)
-        db.session.commit()
-        quotas = Quota.list_all()
-        self.assertEqual(len(quotas), 2)
-        self.assertEqual(quotas[0]['guid'], 'guid')
-        self.assertEqual(quotas[1]['guid'], 'guid2')
 
     def test_quota_data(self):
         """ Check that quota data can be added """
@@ -247,6 +226,65 @@ class DatabaseTest(TestCase):
         quota = Quota.query.filter_by(guid='guid').first()
         self.assertEqual(len(list(quota.data)), 2)
 
+    def test_list_one(self):
+        """ Check that list one function returns dict of one quota """
+        new_quota = Quota(guid='test_guid', name='test_name', url='test_url')
+        db.session.add(new_quota)
+        db.session.commit()
+        one_quota = Quota.list_one(guid='test_guid')
+        self.assertEqual(one_quota['guid'], 'test_guid')
+        self.assertEqual(one_quota['name'], 'test_name')
+
+    def test_list_all(self):
+        """ Check that list all function returns dict of multiple quotas """
+        new_quota = Quota(guid='guid', name='test_name', url='test_url')
+        db.session.add(new_quota)
+        new_quota = Quota(guid='guid2', name='test_name_2', url='test_url_2')
+        db.session.add(new_quota)
+        db.session.commit()
+        quotas = Quota.list_all()
+        self.assertEqual(len(quotas), 2)
+        self.assertEqual(quotas[0]['guid'], 'guid')
+        self.assertEqual(quotas[1]['guid'], 'guid2')
+
+    def test_data_details(self):
+        """ Check that data function returns quota data for a specific
+        month """
+        # Create new quota with quotadata
+        new_quota = Quota(guid='guid', name='test_name', url='test_url')
+        db.session.add(new_quota)
+        quota_data = QuotaData(new_quota)
+        new_quota.data.append(quota_data)
+        db.session.commit()
+        # Check details
+        quota = Quota.query.filter_by(guid='guid').first()
+        self.assertTrue('memory_limit' in quota.data[0].details().keys())
+
+    def test_quota_list_one_with_data_details(self):
+        """ Check that list one returns a list of data details within the
+        designated time period """
+        # Create new quota with two quotadata
+        new_quota = Quota(guid='test_guid', name='test_name', url='test_url')
+        db.session.add(new_quota)
+        quota_data = QuotaData(new_quota)
+        quota_data.date_collected = datetime.date(2014, 1, 1)
+        quota_data_2 = QuotaData(new_quota)
+        new_quota.data.append(quota_data)
+        new_quota.data.append(quota_data_2)
+        db.session.commit()
+
+        # Check that correct quota data is returned by date strings
+        one_quota = Quota.list_one(
+            guid='test_guid', start_date='2013-12-31', end_date='2014-1-2')
+        self.assertEqual(len(one_quota['data']), 1)
+
+        # Check that correct quota data is returned by datetime.dates
+        one_quota = Quota.list_one(
+            guid='test_guid',
+            start_date=datetime.date(2013, 12, 31),
+            end_date=datetime.date(2014, 1, 2))
+        self.assertEqual(len(one_quota['data']), 1)
+
 
 class QuotaAppTest(TestCase):
     """ Test Database """
@@ -262,10 +300,15 @@ class QuotaAppTest(TestCase):
     @classmethod
     def setUpClass(cls):
         db.create_all()
-        new_quota = Quota(guid='guid', name='test_name', url='test_url')
-        db.session.add(new_quota)
-        new_quota = Quota(guid='guid_2', name='test_name_2', url='test_url_2')
-        db.session.add(new_quota)
+        quota_1 = Quota(guid='guid', name='test_name', url='test_url')
+        db.session.add(quota_1)
+        quota_2 = Quota(guid='guid_2', name='test_name_2', url='test_url_2')
+        db.session.add(quota_2)
+        quota_data = QuotaData(quota_1)
+        quota_data.date_collected = datetime.date(2014, 1, 1)
+        quota_data_2 = QuotaData(quota_1)
+        quota_1.data.append(quota_data)
+        quota_1.data.append(quota_data_2)
         db.session.commit()
 
     @classmethod
@@ -293,7 +336,17 @@ class QuotaAppTest(TestCase):
         """ Test the quota details page """
         response = self.client.get("/api/quotas/guid")
         self.assertEqual(response.status_code, 200)
+        # Check if quota was rendered
         self.assertTrue('guid' in response.json.keys())
+        # Check if quota data was rendered
+        self.assertEqual(len(response.json['data']), 2)
+
+    def test_api_quota_detail_dates(self):
+        """ Test the quota details date range page functions """
+        response = self.client.get("/api/quotas/guid/2013-12-31/2014-1-1")
+        self.assertEqual(response.status_code, 200)
+        # Check if quota data was rendered within date range
+        self.assertEqual(len(response.json['data']), 1)
 
 
 class LoadingTest(TestCase):
