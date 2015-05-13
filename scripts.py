@@ -50,13 +50,20 @@ def update_quota(quota):
     db.session.commit()
 
 
+def process_org(cf_api, org):
+    """ Extracts quota data from org, calls api, and updates data """
+    quota_definition_url = org['entity']['quota_definition_url']
+    quota = cf_api.make_request(endpoint=quota_definition_url)
+    update_quota(quota.json())
+
+
 def load_quotas():
     """ Load quotas into database """
     cf_api = CloudFoundry(
         url=os.getenv('CF_URL'),
         username=os.getenv('CF_USERNAME'),
         password=os.getenv('CF_PASSWORD'))
-    api_gen = cf_api.get_quotas()
+    api_gen = cf_api.get_orgs()
     for page in api_gen:
-        for quota in page['resources']:
-            update_quota(quota)
+        for org in page['resources']:
+            process_org(cf_api=cf_api, org=org)
