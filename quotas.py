@@ -6,7 +6,7 @@ app = Flask(__name__)
 app.config.from_object(os.environ['APP_SETTINGS'])
 db = SQLAlchemy(app)
 
-from models import Org
+from models import Quota
 
 
 @app.route("/", methods=['GET'])
@@ -16,19 +16,28 @@ def home():
 
 @app.route("/api/", methods=['GET'])
 def api_index():
-    return "API endpoints /api/orgs and /api/orgs/<guid>"
+    return "API endpoints /api/quotas and /api/quotas/<guid>"
 
 
-@app.route("/api/orgs", methods=['GET'])
+@app.route("/api/quotas", methods=['GET'])
 def all():
-    return jsonify({'Orgs': Org.list_all()})
+    return jsonify({'Quotas': Quota.list_all()})
 
 
-@app.route("/api/org/<guid>", methods=['GET'])
+@app.route("/api/quotas/<guid>", methods=['GET'])
 def one(guid):
-    data = Org.list_one(guid=guid)
+    data = Quota.list_one(guid=guid)
     if data:
-        return jsonify({'Org': data})
+        return jsonify(data)
+    else:
+        return '404.html', 404
+
+
+@app.route("/api/quotas/<guid>/<start_date>/<end_date>", methods=['GET'])
+def details(guid, start_date, end_date):
+    data = Quota.list_one(guid=guid, start_date=start_date, end_date=end_date)
+    if data:
+        return jsonify(data)
     else:
         return '404.html', 404
 
