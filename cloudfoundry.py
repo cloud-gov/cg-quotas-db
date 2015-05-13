@@ -56,3 +56,9 @@ class CloudFoundry:
         req_iterator = self.yield_request(endpoint='v2/quota_definitions')
         for req in req_iterator:
             yield req
+
+    def get_orgs(self):
+        """ Get org data """
+        req_iterator = self.yield_request(endpoint='v2/organizations')
+        for req in req_iterator:
+            yield req

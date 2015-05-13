@@ -30,35 +30,66 @@ mock_quota = {
 }
 mock_quota_2 = copy.deepcopy(mock_quota)
 mock_quota_2['metadata']['guid'] = 'test_quota_2'
+mock_quotas_data = {
+    'next_url': None,
+    'resources': [mock_quota, mock_quota_2]
+}
+mock_org_data = {
+    'next_url': None,
+    'resources':
+        [
+            {
+                "entity": {
+                    "quota_definition_url": "/v2/quota_definitions/guid_1",
+                    "spaces_url": "/v2/organizations/org_1/spaces",
+                }
+            },
+            {
+                "entity": {
+                    "quota_definition_url": "/v2/quota_definitions/guid_2",
+                    "spaces_url": "/v2/organizations/org_1/spaces",
+                }
+            }
+        ]
+}
+mock_token_data = {'access_token': '999', 'expires_in': 0}
 
 
-class MockTokenReq:
+class MockReq:
     """ Returns a mock token in json form """
-    def json():
-        return {'access_token': '999', 'expires_in': 0}
 
+    def __init__(self, data):
+        self.data = data
 
-class MockGetReq:
-    """ Returns a mock token in json form """
-    def json():
-        return {
-            'next_url': None,
-            'resources': [mock_quota, mock_quota_2]
-        }
+    def json(self):
+        return self.data
 
 
 def mock_token(func):
     """ Patches post request and return a mock token """
     def _mock_token(*args, **kwargs):
-        with mock.patch.object(requests, 'post', return_value=MockTokenReq):
+        with mock.patch.object(
+                requests, 'post', return_value=MockReq(data=mock_token_data)):
             return func(*args, **kwargs)
     return _mock_token
 
 
-def mock_get_request(func):
+def mock_quotas_request(func):
     """ Patches get request and return mock quota definitions """
     def _mock_get(*args, **kwargs):
-        with mock.patch.object(requests, 'get', return_value=MockGetReq):
+        with mock.patch.object(
+                requests, 'get',
+                return_value=MockReq(data=mock_quotas_data)):
+            return func(*args, **kwargs)
+    return _mock_get
+
+
+def mock_orgs_request(func):
+    """ Patches get request and return mock quota definitions """
+    def _mock_get(*args, **kwargs):
+        with mock.patch.object(
+                requests, 'get',
+                return_value=MockReq(data=mock_org_data)):
             return func(*args, **kwargs)
     return _mock_get
 
@@ -98,21 +129,21 @@ class CloudFoundryTest(unittest.TestCase):
         self.assertNotEqual(old_token_time, new_token_time)
 
     @mock_token
-    @mock_get_request
+    @mock_quotas_request
     def test_make_request(self):
         """ Check that calling api works properly """
         get_req = self.cf.make_request('http://api.test.com')
         self.assertEqual(len(get_req.json()['resources']), 2)
 
     @mock_token
-    @mock_get_request
+    @mock_quotas_request
     def test_get_quotas(self):
         """ Test that quotas are obtained properly """
         quotas = list(self.cf.get_quotas())
         self.assertEqual(len(quotas[0]['resources']), 2)
 
     @mock_token
-    @mock_get_request
+    @mock_quotas_request
     def test_yield_request(self):
         """ Test that yield_request produces a generator that iterates through
         pages """
@@ -418,12 +449,28 @@ class LoadingTest(TestCase):
         self.assertEqual(len(found), 1)
 
     @mock_token
-    @mock_get_request
+    def test_process_org(self):
+        """ Test that process_org function loads quota from org """
+        cf_api = CloudFoundry(
+            url='api.test.com',
+            username='mockusername@mock.com',
+            password='******')
+        with mock.patch.object(
+                requests, 'get', return_value=MockReq(data=mock_quota)):
+            scripts.process_org(
+                cf_api=cf_api, org=mock_org_data['resources'][0])
+            quotas = Quota.query.all()
+            self.assertEqual(len(quotas), 1)
+
+    @mock_token
+    @mock_orgs_request
     def test_load_quotas(self):
         """ Test that function loads multiple quotas """
+        self.assertEqual('Figure out the mock situation', '')
         scripts.load_quotas()
         quotas = Quota.query.all()
         self.assertEqual(len(quotas), 2)
+
 
 if __name__ == "__main__":
     unittest.main()
