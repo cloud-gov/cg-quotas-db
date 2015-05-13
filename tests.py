@@ -247,13 +247,6 @@ class DatabaseTest(TestCase):
         quota = Quota.query.filter_by(guid='guid').first()
         self.assertEqual(len(list(quota.data)), 2)
 
-    '''
-    def test_data_details(self):
-        """ Check that data function returns quota data for a specific
-        month """
-        self.assertEqual('Fail', 'Finish')
-    '''
-
 
 class QuotaAppTest(TestCase):
     """ Test Database """
@@ -314,12 +307,10 @@ class LoadingTest(TestCase):
         app.config['LIVESERVER_PORT'] = 8943
         return app
 
-    @classmethod
-    def setUpClass(cls):
+    def setUp(self):
         db.create_all()
 
-    @classmethod
-    def tearDownClass(cls):
+    def tearDown(self):
         db.session.remove()
         db.drop_all()
 
@@ -329,24 +320,57 @@ class LoadingTest(TestCase):
         new_data = scripts.get_datetime(date)
         self.assertEqual(new_data, datetime.date(2015, 1, 1))
 
-    '''
-    def test_get_or_create(self):
-        """ Test that get_or_create function works properly """
-
     def test_update_quota(self):
         """ Test that function inserts quota into database """
         scripts.update_quota(mock_quota)
         quota = Quota.query.filter_by(guid='test_quota').first()
         self.assertEqual(quota.name, 'test_quota_name')
 
+    def test_update_quota_data(self):
+        """ Test that function inserts quota data into database """
+        # Add quota
+        quota = Quota(guid='guid', name='test_name', url='test_url')
+        db.session.add(quota)
+        # Add quota data
+        scripts.update_quota_data(
+            quota_model=quota, entity_data=mock_quota['entity'])
+        db.session.commit()
+        # Check if data was added
+        quota = Quota.query.filter_by(guid='guid').first()
+        self.assertEqual(quota.data[0].memory_limit, 1875)
+
+    def test_get_or_create_create(self):
+        """ Test that get_or_create function creates a new object """
+        quota = Quota.query.filter_by(guid='test_guid').all()
+        self.assertEqual(len(quota), 0)
+        create_quota, created = scripts.get_or_create(
+            Quota, guid='test_guid', name='test_name', url='test_url')
+        self.assertTrue(created)
+        found = Quota.query.filter_by(guid='test_guid').all()
+        self.assertEqual(len(found), 1)
+
+    def test_get_or_create_get(self):
+        """ Test that get_or_create function gets an old object """
+        # Create and add a quota
+        quota = Quota(guid='test_guid', name='test_name', url='test_url')
+        db.session.add(quota)
+        db.session.commit()
+        # Try to get the same quota
+        ret_quota, created = scripts.get_or_create(
+            Quota, guid='test_guid', name='test_name', url='test_url')
+        self.assertEqual(ret_quota.guid, 'test_guid')
+        self.assertFalse(created)
+        # Check if there are duplicates
+        found = Quota.query.filter_by(guid='test_guid').all()
+        self.assertEqual(len(found), 1)
+
     @mock_token
     @mock_get_request
     def test_load_quotas(self):
         """ Test that function loads multiple quotas """
         scripts.load_quotas()
-        quota = Quota.query.order_by().all()
-        self.assertEqual(len(quota), 2)
-    '''
+        quotas = Quota.query.all()
+        self.assertEqual(len(quotas), 2)
 
 if __name__ == "__main__":
     unittest.main()

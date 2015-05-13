@@ -8,15 +8,15 @@ from quotas import db
 
 
 def get_or_create(model, **kwargs):
-    """ Mimic Django ORM's get_or_create script """
+    """ Mimic Django ORM's get_or_create script: if created returns True """
     instance = model.query.filter_by(**kwargs).first()
     if instance:
-        return instance, True
+        return instance, False
     else:
         instance = model(**kwargs)
         db.session.add(instance)
         db.session.commit()
-        return instance, False
+        return instance, True
 
 
 def get_datetime(date_str):
@@ -25,23 +25,30 @@ def get_datetime(date_str):
     return datetime.datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%SZ").date()
 
 
+def update_quota_data(quota_model, entity_data):
+    """ Add quota data to to database """
+    quota_data, data_created = get_or_create(QuotaData, quota=quota_model.guid)
+    quota_data.memory_limit = entity_data['memory_limit']
+    quota_data.total_routes = entity_data['total_routes']
+    quota_data.total_services = entity_data['total_services']
+    quota_model.data.append(quota_data)
+
+
 def update_quota(quota):
     """ Load one quota into database """
-    q, quota_created = get_or_create(
+    quota_model, quota_created = get_or_create(
         model=Quota,
         guid=quota['metadata']['guid'],
         name=quota['entity']['name'],
         url=quota['metadata']['url'])
-    q.created_at = get_datetime(quota['metadata']['created_at'])
+    '''
+    quota_model.created_at = get_datetime(quota['metadata']['created_at'])
     updated = quota['metadata'].get('updated_at')
     if updated:
-        q.updated_at = get_datetime(updated)
-    quota_data, data_created = get_or_create(QuotaData, quota_id=q)
-    quota_data.memory_limit = quota['entity']['memory_limit']
-    quota_data.total_routes = quota['entity']['total_routes']
-    quota_data.total_services = quota['entity']['total_services']
-    q.data.append(quota_data)
-    db.session.merge(q)
+        quota_model.updated_at = get_datetime(updated)
+    update_quota_data(quota_model=quota_model, entity_data=quota['entity'])
+    '''
+    db.session.merge(quota_model)
     db.session.commit()
 
 
@@ -54,5 +61,4 @@ def load_quotas():
     api_gen = cf_api.get_quotas()
     for page in api_gen:
         for quota in page['resources']:
-            if quota['entity'].get('name'):
-                update_quota(quota)
+            update_quota(quota)

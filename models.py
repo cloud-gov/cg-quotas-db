@@ -8,7 +8,7 @@ class QuotaData(db.Model):
 
     __tablename__ = 'data'
 
-    quota_id = db.Column(db.String, db.ForeignKey('quota.guid'))
+    quota = db.Column(db.String, db.ForeignKey('quota.guid'))
     date_collected = db.Column(db.DateTime())
     memory_limit = db.Column(db.Integer())
     total_routes = db.Column(db.Integer())
@@ -16,14 +16,14 @@ class QuotaData(db.Model):
 
     # Limiting the data by date
     __table_args__ = (db.PrimaryKeyConstraint(
-        'quota_id', 'date_collected', name='quota_guid_date'),)
+        'quota', 'date_collected', name='quota_guid_date'),)
 
     def __init__(self, quota):
-        self.quota_id = quota.guid
+        self.quota = quota
         self.date_collected = date.today()
 
     def __repr__(self):
-        return '<guid {0} date {1}>'.format(self.quota_id, self.date_collected)
+        return '<guid {0} date {1}>'.format(self.quota, self.date_collected)
 
 
 class Quota(db.Model):
