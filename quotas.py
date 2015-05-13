@@ -16,7 +16,7 @@ def home():
 
 @app.route("/api/", methods=['GET'])
 def api_index():
-    return "API endpoints /api/orgs and /api/orgs/<guid>"
+    return "API endpoints /api/quotas and /api/quotas/<guid>"
 
 
 @app.route("/api/quotas", methods=['GET'])
@@ -27,6 +27,15 @@ def all():
 @app.route("/api/quotas/<guid>", methods=['GET'])
 def one(guid):
     data = Quota.list_one(guid=guid)
+    if data:
+        return jsonify(data)
+    else:
+        return '404.html', 404
+
+
+@app.route("/api/quotas/<guid>/<start_date>/<end_date>", methods=['GET'])
+def details(guid, start_date, end_date):
+    data = Quota.list_one(guid=guid, start_date=start_date, end_date=end_date)
     if data:
         return jsonify(data)
     else:
