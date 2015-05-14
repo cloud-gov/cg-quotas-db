@@ -3,3 +3,4 @@ ideas.txt
 *.db
 migrations
 __pycache__/
+.coverage
