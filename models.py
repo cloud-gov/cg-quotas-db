@@ -10,7 +10,7 @@ class Service(db.Model):
     __tablename__ = 'service'
 
     quota = db.Column(db.String, db.ForeignKey('quota.guid'))
-    guid = db.Column(db.String(), unique=True)
+    guid = db.Column(db.String())
     date_collected = db.Column(db.Date())
     name = db.Column(db.String())
 
@@ -39,8 +39,11 @@ class Service(db.Model):
     @classmethod
     def aggregate(cls, quota_guid, start_date=None, end_date=None):
         """ Counts the number of days a Service has been active """
-        q = db.session.query(cls.name, func.count(cls.date_collected)) \
-            .filter_by(quota=quota_guid).group_by(cls.name)
+        q = db.session.query(
+            cls.name, cls.guid, func.count(cls.date_collected))
+        if start_date and end_date:
+            q = q.filter(cls.date_collected.between(start_date, end_date))
+        q = q.filter_by(quota=quota_guid).group_by(cls.guid)
         return q.all()
 
 
@@ -80,8 +83,10 @@ class QuotaData(db.Model):
     def aggregate(cls, quota_guid, start_date=None, end_date=None):
         """ Counts the number of days a specific memory setting has
         been active """
-        q = db.session.query(cls.memory_limit, func.count(cls.date_collected))\
-            .filter_by(quota=quota_guid).group_by(cls.memory_limit)
+        q = db.session.query(cls.memory_limit, func.count(cls.date_collected))
+        if start_date and end_date:
+            q = q.filter(cls.date_collected.between(start_date, end_date))
+        q = q.filter_by(quota=quota_guid).group_by(cls.memory_limit)
         return q.all()
 
 
@@ -160,15 +165,16 @@ class Quota(db.Model):
     # Resources
     @classmethod
     def list_one_details(cls, guid, start_date=None, end_date=None):
-        """ List one quota and all dates """
+        """ List one quota along with all data on memory usage and services """
         quota = cls.query.filter_by(guid=guid).first()
         if quota:
-            return quota.data_aggregates(
+            return quota.data_details(
                 start_date=start_date, end_date=end_date)
 
     @classmethod
     def list_one_aggregate(cls, guid, start_date=None, end_date=None):
-        """ List one quota and all dates """
+        """ List one quota and aggregation of service and memory usage
+        by date """
         quota = cls.query.filter_by(guid=guid).first()
         if quota:
             return quota.data_aggregates(

@@ -207,12 +207,12 @@ class DatabaseTest(TestCase):
             sorted(list(quota_dict.keys())),
             ['created_at', 'guid', 'name', 'updated_at', 'url'])
 
-    def test_list_one(self):
+    def test_list_one_details(self):
         """ Check that list one function returns dict of one quota """
         new_quota = Quota(guid='test_guid', name='test_name', url='test_url')
         db.session.add(new_quota)
         db.session.commit()
-        one_quota = Quota.list_one(guid='test_guid')
+        one_quota = Quota.list_one_details(guid='test_guid')
         self.assertEqual(one_quota['guid'], 'test_guid')
         self.assertEqual(one_quota['name'], 'test_name')
 
@@ -306,12 +306,12 @@ class DatabaseForeignKeyTest(TestCase):
         db.session.commit()
 
         # Check that correct quota data is returned by date strings
-        one_quota = Quota.list_one(
+        one_quota = Quota.list_one_details(
             guid='guid', start_date='2013-12-31', end_date='2014-1-2')
         self.assertEqual(len(one_quota['data']), 1)
 
         # Check that correct quota data is returned by datetime.dates
-        one_quota = Quota.list_one(
+        one_quota = Quota.list_one_details(
             guid='guid',
             start_date=datetime.date(2013, 12, 31),
             end_date=datetime.date(2014, 1, 2))
@@ -327,6 +327,35 @@ class DatabaseForeignKeyTest(TestCase):
         # Check details
         quota = Quota.query.filter_by(guid='guid').first()
         self.assertTrue('memory_limit' in quota.data[0].details().keys())
+
+    def test_quotadata_aggregate(self):
+        """ Check that the aggregate function return the number of days a
+        Quota has been active
+        """
+        # Add multiple quotas
+        quota_data_1 = QuotaData(self.quota)
+        quota_data_1.memory_limit = 1000
+        quota_data_1.date_collected = datetime.date(2014, 1, 1)
+        quota_data_2 = QuotaData(self.quota)
+        quota_data_2.memory_limit = 1000
+        quota_data_3 = QuotaData(self.quota)
+        quota_data_3.memory_limit = 2000
+        quota_data_3.date_collected = datetime.date(2013, 1, 1)
+        self.quota.data.append(quota_data_1)
+        self.quota.data.append(quota_data_2)
+        self.quota.data.append(quota_data_3)
+        db.session.commit()
+
+        # Aggregate
+        data = QuotaData.aggregate(quota_guid=self.quota.guid)
+        self.assertEqual(data, [(1000, 2), (2000, 1)])
+
+        # Aggregate with dates
+        data = QuotaData.aggregate(
+            quota_guid=self.quota.guid,
+            start_date='2013-01-01',
+            end_date='2015-01-01'),
+        self.assertEqual(data, ([(1000, 1), (2000, 1)],))
 
     def test_service_data(self):
         """ Check that service data can be added """
@@ -379,12 +408,12 @@ class DatabaseForeignKeyTest(TestCase):
         db.session.commit()
 
         # Check that correct services data is returned by date strings
-        one_quota = Quota.list_one(
+        one_quota = Quota.list_one_details(
             guid='guid', start_date='2013-12-31', end_date='2014-1-2')
         self.assertEqual(len(one_quota['services']), 1)
 
         # Check that correct services data is returned by datetime.dates
-        one_quota = Quota.list_one(
+        one_quota = Quota.list_one_details(
             guid='guid',
             start_date=datetime.date(2013, 12, 31),
             end_date=datetime.date(2014, 1, 2))
@@ -418,6 +447,35 @@ class DatabaseForeignKeyTest(TestCase):
         data = self.quota.foreign_key_preparer(
             QuotaData, start_date='2013-12-31', end_date='2014-1-2')
         self.assertEqual(len(data), 1)
+
+    def test_service_aggregate(self):
+        """ Check that the aggregate function return the number of days a
+        Service has been active
+        """
+        # Add multiple quotas
+        service_1 = Service(quota=self.quota, guid='pgres', name='postgres')
+        service_1.date_collected = datetime.date(2013, 1, 15)
+        service_2 = Service(quota=self.quota, guid='pgres', name='postgres')
+        service_2.date_collected = datetime.date(2014, 1, 31)
+        service_3 = Service(quota=self.quota, guid='elastic', name='es')
+        service_3.date_collected = datetime.date(2013, 1, 15)
+        self.quota.services.append(service_1)
+        self.quota.services.append(service_2)
+        self.quota.services.append(service_3)
+        db.session.commit()
+
+        # Aggregate
+        data = Service.aggregate(quota_guid=self.quota.guid)
+        self.assertEqual(
+            data, [('es', 'elastic', 1), ('postgres', 'pgres', 2)])
+
+        # Aggregate with dates
+        data = Service.aggregate(
+            quota_guid=self.quota.guid,
+            start_date='2013-01-01',
+            end_date='2013-01-31')
+        self.assertEqual(
+            data, [('es', 'elastic', 1), ('postgres', 'pgres', 1)])
 
 
 class QuotaAppTest(TestCase):
@@ -478,7 +536,7 @@ class QuotaAppTest(TestCase):
         # Check if quota was rendered
         self.assertTrue('guid' in response.json.keys())
         # Check if quota data was rendered
-        self.assertEqual(len(response.json['data']), 2)
+        self.assertEqual(len(response.json['data']), 1)
         # Check if service data was rendered
         self.assertEqual(len(response.json['services']), 2)
 
@@ -489,7 +547,7 @@ class QuotaAppTest(TestCase):
         # Check if quota data was rendered within date range
         self.assertEqual(len(response.json['data']), 1)
         # Check if service data was rendered
-        self.assertEqual(len(response.json['services']), 1)
+        self.assertEqual(len(response.json['services']), 2)
 
 
 class LoadingTest(TestCase):
