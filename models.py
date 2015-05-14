@@ -1,5 +1,6 @@
 from datetime import date
 from quotas import db
+from sqlalchemy import func
 from sqlalchemy.orm import relationship
 
 
@@ -35,6 +36,13 @@ class Service(db.Model):
             'name': self.name,
         }
 
+    @classmethod
+    def aggregate(cls, quota_guid, start_date=None, end_date=None):
+        """ Counts the number of days a Service has been active """
+        q = db.session.query(cls.name, func.count(cls.date_collected)) \
+            .filter_by(quota=quota_guid).group_by(cls.name)
+        return q.all()
+
 
 class QuotaData(db.Model):
     """ Model for a specific Quotas's data """
@@ -67,6 +75,14 @@ class QuotaData(db.Model):
             'total_routes': self.total_routes,
             'total_services': self.total_services,
         }
+
+    @classmethod
+    def aggregate(cls, quota_guid, start_date=None, end_date=None):
+        """ Counts the number of days a specific memory setting has
+        been active """
+        q = db.session.query(cls.memory_limit, func.count(cls.date_collected))\
+            .filter_by(quota=quota_guid).group_by(cls.memory_limit)
+        return q.all()
 
 
 class Quota(db.Model):
@@ -125,13 +141,38 @@ class Quota(db.Model):
             'services': services
         }
 
+    def data_aggregates(self, start_date=None, end_date=None):
+        """ Displays Quota in dict format with data details """
+        data = QuotaData.aggregate(
+            quota_guid=self.guid, start_date=start_date, end_date=end_date)
+        services = Service.aggregate(
+            quota_guid=self.guid, start_date=start_date, end_date=end_date)
+        return {
+            'guid': self.guid,
+            'name': self.name,
+            'url': self.url,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at,
+            'data': data,
+            'services': services
+        }
+
     # Resources
     @classmethod
-    def list_one(cls, guid, start_date=None, end_date=None):
+    def list_one_details(cls, guid, start_date=None, end_date=None):
         """ List one quota and all dates """
         quota = cls.query.filter_by(guid=guid).first()
         if quota:
-            return quota.data_details(start_date=start_date, end_date=end_date)
+            return quota.data_aggregates(
+                start_date=start_date, end_date=end_date)
+
+    @classmethod
+    def list_one_aggregate(cls, guid, start_date=None, end_date=None):
+        """ List one quota and all dates """
+        quota = cls.query.filter_by(guid=guid).first()
+        if quota:
+            return quota.data_aggregates(
+                start_date=start_date, end_date=end_date)
 
     @classmethod
     def list_all(cls):

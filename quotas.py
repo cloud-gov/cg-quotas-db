@@ -26,7 +26,7 @@ def all():
 
 @app.route("/api/quotas/<guid>", methods=['GET'])
 def one(guid):
-    data = Quota.list_one(guid=guid)
+    data = Quota.list_one_aggregate(guid=guid)
     if data:
         return jsonify(data)
     else:

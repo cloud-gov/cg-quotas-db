@@ -58,8 +58,8 @@ def load_services(space_summary, quota):
         service_instance, created = get_or_create(
             model=Service,
             quota=quota.guid,
-            guid=space_summary['guid'],
-            name=space_summary['name'])
+            guid=service['guid'],
+            name=service['name'])
         quota.services.append(service_instance)
         db.session.merge(quota)
         db.session.commit()
