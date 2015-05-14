@@ -35,7 +35,8 @@ def one(guid):
 
 @app.route("/api/quotas/<guid>/<start_date>/<end_date>", methods=['GET'])
 def details(guid, start_date, end_date):
-    data = Quota.list_one(guid=guid, start_date=start_date, end_date=end_date)
+    data = Quota.list_one_aggregate(
+        guid=guid, start_date=start_date, end_date=end_date)
     if data:
         return jsonify(data)
     else:
