@@ -10,7 +10,7 @@ import unittest
 # App imports
 from cloudfoundry import CloudFoundry
 from quotas import app, db
-from models import Quota, QuotaData
+from models import Quota, QuotaData, Service
 import scripts
 
 mock_quota = {
@@ -207,62 +207,12 @@ class DatabaseTest(TestCase):
             sorted(list(quota_dict.keys())),
             ['created_at', 'guid', 'name', 'updated_at', 'url'])
 
-    def test_quota_data(self):
-        """ Check that quota data can be added """
-        # Creating Quota and QuotaData
-        new_quota = Quota(guid='guid', name='test_name', url='test_url')
-        db.session.add(new_quota)
-        quota_data = QuotaData(new_quota)
-        quota_data.memory_limit = 1
-        quota_data.total_routes = 2
-        quota_data.total_services = 3
-        new_quota.data.append(quota_data)
-        db.session.commit()
-        # Retrieve QuotaData
-        quota = Quota.query.filter_by(guid='guid').first()
-        self.assertEqual(quota.name, 'test_name')
-        self.assertEqual(len(list(quota.data)), 1)
-        self.assertEqual(quota.data[0].memory_limit, 1)
-        self.assertEqual(quota.data[0].total_routes, 2)
-        self.assertEqual(quota.data[0].total_services, 3)
-
-    def test_primary_key_constraints_for_quotadata(self):
-        """ Check that the PrimaryKeyConstraints work for QuotaData """
-        failed = False
-        new_quota = Quota(guid='guid', name='test_name', url='test_url')
-        db.session.add(new_quota)
-        quota_data = QuotaData(new_quota)
-        quota_data_2 = QuotaData(new_quota)
-        new_quota.data.append(quota_data)
-        new_quota.data.append(quota_data_2)
-        try:
-            db.session.commit()
-        except:
-            failed = True
-        self.assertTrue(failed)
-
-    def test_quota_data_one_to_many(self):
-        """ Check that the relationship between Quota and QuotaData is
-        one to many """
-        # Creating Quota and 2 instances QuotaData with diff. dates
-        new_quota = Quota(guid='guid', name='test_name', url='test_url')
-        db.session.add(new_quota)
-        quota_data = QuotaData(new_quota)
-        quota_data.date_collected = datetime.date(2015, 1, 1)
-        quota_data_2 = QuotaData(new_quota)
-        new_quota.data.append(quota_data)
-        new_quota.data.append(quota_data_2)
-        db.session.commit()
-        # Retrieve QuotaData
-        quota = Quota.query.filter_by(guid='guid').first()
-        self.assertEqual(len(list(quota.data)), 2)
-
-    def test_list_one(self):
+    def test_list_one_details(self):
         """ Check that list one function returns dict of one quota """
         new_quota = Quota(guid='test_guid', name='test_name', url='test_url')
         db.session.add(new_quota)
         db.session.commit()
-        one_quota = Quota.list_one(guid='test_guid')
+        one_quota = Quota.list_one_details(guid='test_guid')
         self.assertEqual(one_quota['guid'], 'test_guid')
         self.assertEqual(one_quota['name'], 'test_name')
 
@@ -278,43 +228,254 @@ class DatabaseTest(TestCase):
         self.assertEqual(quotas[0]['guid'], 'guid')
         self.assertEqual(quotas[1]['guid'], 'guid2')
 
-    def test_data_details(self):
-        """ Check that data function returns quota data for a specific
-        month """
-        # Create new quota with quotadata
-        new_quota = Quota(guid='guid', name='test_name', url='test_url')
-        db.session.add(new_quota)
-        quota_data = QuotaData(new_quota)
-        new_quota.data.append(quota_data)
+
+class DatabaseForeignKeyTest(TestCase):
+    """ Test Database """
+
+    SQLALCHEMY_DATABASE_URI = "sqlite://"
+    TESTING = True
+
+    def create_app(self):
+        app.config['TESTING'] = True
+        app.config['LIVESERVER_PORT'] = 8943
+        return app
+
+    def setUp(self):
+        db.create_all()
+        self.quota = Quota(guid='guid', name='test_name', url='test_url')
+        db.session.add(self.quota)
         db.session.commit()
-        # Check details
+
+    def tearDown(self):
+        db.session.remove()
+        db.drop_all()
+
+    def test_quota_data(self):
+        """ Check that quota data can be added """
+        # Adding QuotaData
+        quota_data = QuotaData(self.quota)
+        quota_data.memory_limit = 1
+        quota_data.total_routes = 2
+        quota_data.total_services = 3
+        self.quota.data.append(quota_data)
+        db.session.commit()
+        # Retrieve QuotaData
         quota = Quota.query.filter_by(guid='guid').first()
-        self.assertTrue('memory_limit' in quota.data[0].details().keys())
+        self.assertEqual(quota.name, 'test_name')
+        self.assertEqual(len(list(quota.data)), 1)
+        self.assertEqual(quota.data[0].memory_limit, 1)
+        self.assertEqual(quota.data[0].total_routes, 2)
+        self.assertEqual(quota.data[0].total_services, 3)
+
+    def test_primary_key_constraints_for_quotadata(self):
+        """ Check that the PrimaryKeyConstraints work for QuotaData """
+        failed = False
+        quota_data = QuotaData(self.quota)
+        quota_data_2 = QuotaData(self.quota)
+        self.quota.data.append(quota_data)
+        self.quota.data.append(quota_data_2)
+        try:
+            db.session.commit()
+        except:
+            failed = True
+        self.assertTrue(failed)
+
+    def test_quota_data_one_to_many(self):
+        """ Check that the relationship between Quota and QuotaData is
+        one to many """
+        # Creating Quota and 2 instances QuotaData with diff. dates
+        quota_data = QuotaData(self.quota)
+        quota_data.date_collected = datetime.date(2015, 1, 1)
+        quota_data_2 = QuotaData(self.quota)
+        self.quota.data.append(quota_data)
+        self.quota.data.append(quota_data_2)
+        db.session.commit()
+        # Retrieve QuotaData
+        quota = Quota.query.filter_by(guid='guid').first()
+        self.assertEqual(len(list(quota.data)), 2)
 
     def test_quota_list_one_with_data_details(self):
         """ Check that list one returns a list of data details within the
         designated time period """
         # Create new quota with two quotadata
-        new_quota = Quota(guid='test_guid', name='test_name', url='test_url')
-        db.session.add(new_quota)
-        quota_data = QuotaData(new_quota)
+        quota_data = QuotaData(self.quota)
         quota_data.date_collected = datetime.date(2014, 1, 1)
-        quota_data_2 = QuotaData(new_quota)
-        new_quota.data.append(quota_data)
-        new_quota.data.append(quota_data_2)
+        quota_data_2 = QuotaData(self.quota)
+        self.quota.data.append(quota_data)
+        self.quota.data.append(quota_data_2)
         db.session.commit()
 
         # Check that correct quota data is returned by date strings
-        one_quota = Quota.list_one(
-            guid='test_guid', start_date='2013-12-31', end_date='2014-1-2')
+        one_quota = Quota.list_one_details(
+            guid='guid', start_date='2013-12-31', end_date='2014-1-2')
         self.assertEqual(len(one_quota['data']), 1)
 
         # Check that correct quota data is returned by datetime.dates
-        one_quota = Quota.list_one(
-            guid='test_guid',
+        one_quota = Quota.list_one_details(
+            guid='guid',
             start_date=datetime.date(2013, 12, 31),
             end_date=datetime.date(2014, 1, 2))
         self.assertEqual(len(one_quota['data']), 1)
+
+    def test_quotadata_details(self):
+        """ Check that details function returns dict for a specific
+        quotadata object """
+        # Create new quota with quotadata
+        quota_data = QuotaData(self.quota)
+        self.quota.data.append(quota_data)
+        db.session.commit()
+        # Check details
+        quota = Quota.query.filter_by(guid='guid').first()
+        self.assertTrue('memory_limit' in quota.data[0].details().keys())
+
+    def test_quotadata_aggregate(self):
+        """ Check that the aggregate function return the number of days a
+        Quota has been active
+        """
+        # Add multiple quotas
+        quota_data_1 = QuotaData(self.quota)
+        quota_data_1.memory_limit = 1000
+        quota_data_1.date_collected = datetime.date(2014, 1, 1)
+        quota_data_2 = QuotaData(self.quota)
+        quota_data_2.memory_limit = 1000
+        quota_data_3 = QuotaData(self.quota)
+        quota_data_3.memory_limit = 2000
+        quota_data_3.date_collected = datetime.date(2013, 1, 1)
+        self.quota.data.append(quota_data_1)
+        self.quota.data.append(quota_data_2)
+        self.quota.data.append(quota_data_3)
+        db.session.commit()
+
+        # Aggregate
+        data = QuotaData.aggregate(quota_guid=self.quota.guid)
+        self.assertEqual(data, [(1000, 2), (2000, 1)])
+
+        # Aggregate with dates
+        data = QuotaData.aggregate(
+            quota_guid=self.quota.guid,
+            start_date='2013-01-01',
+            end_date='2015-01-01'),
+        self.assertEqual(data, ([(1000, 1), (2000, 1)],))
+
+    def test_service_data(self):
+        """ Check that service data can be added """
+        # Adding Service data
+        service_data = Service(quota=self.quota, guid='sid', name='test')
+        self.quota.services.append(service_data)
+        db.session.commit()
+        # Retrieve Service data
+        quota = Quota.query.filter_by(guid='guid').first()
+        self.assertEqual(quota.name, 'test_name')
+        self.assertEqual(len(quota.services), 1)
+        self.assertEqual(quota.services[0].guid, 'sid')
+
+    def test_primary_key_constraints_for_service_data(self):
+        """ Check that the PrimaryKeyConstraints work for Service """
+        failed = False
+        service_1 = Service(quota=self.quota, guid='sid', name='test')
+        service_2 = Service(quota=self.quota, guid='sid', name='test')
+        self.quota.services.append(service_1)
+        self.quota.services.append(service_2)
+        try:
+            db.session.commit()
+        except:
+            failed = True
+        self.assertTrue(failed)
+
+    def test_service_data_one_to_many(self):
+        """ Check that the relationship between Quota and Service is
+        one to many """
+        # Creating Quota and 2 instances Service with diff. dates
+        service_1 = Service(quota=self.quota, guid='sid', name='test')
+        service_1.date_collected = datetime.date(2015, 1, 1)
+        service_2 = Service(quota=self.quota, guid='sid_2', name='test_2')
+        self.quota.services.append(service_1)
+        self.quota.services.append(service_2)
+        db.session.commit()
+        # Retrieve QuotaData
+        quota = Quota.query.filter_by(guid='guid').first()
+        self.assertEqual(len(list(quota.services)), 2)
+
+    def test_service_list_one_with_data_details(self):
+        """ Check that list one returns a list of data details within the
+        designated time period """
+        # Create new quota with two services
+        service_1 = Service(quota=self.quota, guid='sid', name='test')
+        service_1.date_collected = datetime.date(2014, 1, 1)
+        service_2 = Service(quota=self.quota, guid='sid_2', name='test_2')
+        self.quota.services.append(service_1)
+        self.quota.services.append(service_2)
+        db.session.commit()
+
+        # Check that correct services data is returned by date strings
+        one_quota = Quota.list_one_details(
+            guid='guid', start_date='2013-12-31', end_date='2014-1-2')
+        self.assertEqual(len(one_quota['services']), 1)
+
+        # Check that correct services data is returned by datetime.dates
+        one_quota = Quota.list_one_details(
+            guid='guid',
+            start_date=datetime.date(2013, 12, 31),
+            end_date=datetime.date(2014, 1, 2))
+        self.assertEqual(len(one_quota['services']), 1)
+
+    def test_service_details(self):
+        """ Check that details function returns dict for a specific
+        service object """
+        # Create new quota with quotadata
+        service_1 = Service(quota=self.quota, guid='sid', name='test')
+        self.quota.services.append(service_1)
+        db.session.commit()
+        # Check details
+        quota = Quota.query.filter_by(guid='guid').first()
+        self.assertTrue('name' in quota.services[0].details().keys())
+
+    def test_foreign_key_preparer(self):
+        """ Verify that function prepares a details list for a givin
+        foreign key """
+        # Create new quota with two quotadata
+        quota_data = QuotaData(self.quota)
+        quota_data.date_collected = datetime.date(2014, 1, 1)
+        quota_data_2 = QuotaData(self.quota)
+        self.quota.data.append(quota_data)
+        self.quota.data.append(quota_data_2)
+        db.session.commit()
+        # Check function with no date range
+        data = self.quota.foreign_key_preparer(QuotaData)
+        self.assertEqual(len(data), 2)
+        # Check function with date range
+        data = self.quota.foreign_key_preparer(
+            QuotaData, start_date='2013-12-31', end_date='2014-1-2')
+        self.assertEqual(len(data), 1)
+
+    def test_service_aggregate(self):
+        """ Check that the aggregate function return the number of days a
+        Service has been active
+        """
+        # Add multiple quotas
+        service_1 = Service(quota=self.quota, guid='pgres', name='postgres')
+        service_1.date_collected = datetime.date(2013, 1, 15)
+        service_2 = Service(quota=self.quota, guid='pgres', name='postgres')
+        service_2.date_collected = datetime.date(2014, 1, 31)
+        service_3 = Service(quota=self.quota, guid='elastic', name='es')
+        service_3.date_collected = datetime.date(2013, 1, 15)
+        self.quota.services.append(service_1)
+        self.quota.services.append(service_2)
+        self.quota.services.append(service_3)
+        db.session.commit()
+
+        # Aggregate
+        data = Service.aggregate(quota_guid=self.quota.guid)
+        self.assertEqual(
+            data, [('es', 'elastic', 1), ('postgres', 'pgres', 2)])
+
+        # Aggregate with dates
+        data = Service.aggregate(
+            quota_guid=self.quota.guid,
+            start_date='2013-01-01',
+            end_date='2013-01-31')
+        self.assertEqual(
+            data, [('es', 'elastic', 1), ('postgres', 'pgres', 1)])
 
 
 class QuotaAppTest(TestCase):
@@ -340,6 +501,11 @@ class QuotaAppTest(TestCase):
         quota_data_2 = QuotaData(quota_1)
         quota_1.data.append(quota_data)
         quota_1.data.append(quota_data_2)
+        service_1 = Service(quota=quota_1, guid='sid', name='test')
+        service_1.date_collected = datetime.date(2014, 1, 1)
+        service_2 = Service(quota=quota_1, guid='sid_2', name='test_2')
+        quota_1.services.append(service_1)
+        quota_1.services.append(service_2)
         db.session.commit()
 
     @classmethod
@@ -370,7 +536,9 @@ class QuotaAppTest(TestCase):
         # Check if quota was rendered
         self.assertTrue('guid' in response.json.keys())
         # Check if quota data was rendered
-        self.assertEqual(len(response.json['data']), 2)
+        self.assertEqual(len(response.json['data']), 1)
+        # Check if service data was rendered
+        self.assertEqual(len(response.json['services']), 2)
 
     def test_api_quota_detail_dates(self):
         """ Test the quota details date range page functions """
@@ -378,6 +546,8 @@ class QuotaAppTest(TestCase):
         self.assertEqual(response.status_code, 200)
         # Check if quota data was rendered within date range
         self.assertEqual(len(response.json['data']), 1)
+        # Check if service data was rendered
+        self.assertEqual(len(response.json['services']), 2)
 
 
 class LoadingTest(TestCase):
@@ -448,9 +618,16 @@ class LoadingTest(TestCase):
         found = Quota.query.filter_by(guid='test_guid').all()
         self.assertEqual(len(found), 1)
 
+    def test_load_services(self):
+        self.assertEqual('Finish Tests', '')
+
+    def test_process_spaces(self):
+        self.assertEqual('Finish Tests', '')
+
     @mock_token
     def test_process_org(self):
         """ Test that process_org function loads quota from org """
+        self.assertEqual('Figure out the mock situation', '')
         cf_api = CloudFoundry(
             url='api.test.com',
             username='mockusername@mock.com',
