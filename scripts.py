@@ -1,7 +1,7 @@
 import os
 import datetime
 from cloudfoundry import CloudFoundry
-from models import Quota, QuotaData
+from models import Quota, QuotaData, Service
 from quotas import db
 
 """ App scripts """
@@ -48,13 +48,40 @@ def update_quota(quota):
     update_quota_data(quota_model=quota_model, entity_data=quota['entity'])
     db.session.merge(quota_model)
     db.session.commit()
+    return quota_model
+
+
+def load_services(space_summary, quota):
+    """ Load services into database """
+    services = space_summary.get('services')
+    for service in services:
+        service_instance, created = get_or_create(
+            model=Service,
+            quota=quota.guid,
+            guid=service['guid'],
+            name=service['name'])
+        quota.services.append(service_instance)
+        db.session.merge(quota)
+        db.session.commit()
+
+
+def process_spaces(cf_api, spaces_url, quota):
+    """ Extracts services from each space """
+    spaces_gen = cf_api.yield_request(endpoint=spaces_url)
+    for page in spaces_gen:
+        for space in page['resources']:
+            space_url = '%s/summary' % space['metadata']['url']
+            space_summary = cf_api.make_request(endpoint=space_url).json()
+            load_services(space_summary=space_summary, quota=quota)
 
 
 def process_org(cf_api, org):
     """ Extracts quota data from org, calls api, and updates data """
     quota_definition_url = org['entity']['quota_definition_url']
     quota = cf_api.make_request(endpoint=quota_definition_url)
-    update_quota(quota.json())
+    quota_model = update_quota(quota.json())
+    spaces_url = org['entity']['spaces_url']
+    process_spaces(cf_api=cf_api, spaces_url=spaces_url, quota=quota_model)
 
 
 def load_quotas():
