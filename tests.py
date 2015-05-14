@@ -52,6 +52,12 @@ mock_org_data = {
             }
         ]
 }
+mock_space_summary = {
+    'services': [
+        {'guid': 'guid_1', 'name': 'hub-es15-highmem'},
+        {'guid': 'guid_2', 'name': 'es'}
+    ]
+}
 mock_token_data = {'access_token': '999', 'expires_in': 0}
 
 
@@ -547,7 +553,7 @@ class QuotaAppTest(TestCase):
         # Check if quota data was rendered within date range
         self.assertEqual(len(response.json['data']), 1)
         # Check if service data was rendered
-        self.assertEqual(len(response.json['services']), 2)
+        self.assertEqual(len(response.json['services']), 1)
 
 
 class LoadingTest(TestCase):
@@ -619,10 +625,15 @@ class LoadingTest(TestCase):
         self.assertEqual(len(found), 1)
 
     def test_load_services(self):
-        self.assertEqual('Finish Tests', '')
+        quota = Quota(guid='test_guid', name='test_name', url='test_url')
+        scripts.load_services(space_summary=mock_space_summary, quota=quota)
+        self.assertEqual(len(quota.services), 2)
+        self.assertEqual(quota.services[0].guid, 'guid_1')
+        self.assertEqual(quota.services[0].name, 'hub-es15-highmem')
 
+    @mock_token
     def test_process_spaces(self):
-        self.assertEqual('Finish Tests', '')
+        self.assertEqual('Figure out the mock situation', '')
 
     @mock_token
     def test_process_org(self):
