@@ -84,13 +84,18 @@ def process_org(cf_api, org):
     process_spaces(cf_api=cf_api, spaces_url=spaces_url, quota=quota_model)
 
 
-def load_quotas():
+def load_quotas(cf_api):
     """ Load quotas into database """
-    cf_api = CloudFoundry(
-        url=os.getenv('CF_URL'),
-        username=os.getenv('CF_USERNAME'),
-        password=os.getenv('CF_PASSWORD'))
     api_gen = cf_api.get_orgs()
     for page in api_gen:
         for org in page['resources']:
             process_org(cf_api=cf_api, org=org)
+
+
+def load_data():
+    """ Starts the data loading process """
+    cf_api = CloudFoundry(
+        url=os.getenv('CF_URL'),
+        username=os.getenv('CF_USERNAME'),
+        password=os.getenv('CF_PASSWORD'))
+    load_quotas(cf_api=cf_api)

@@ -31,7 +31,13 @@ python manage.py db upgrade
 python manage.py update_database
 ```
 
-### Start app
+### Testing
+```
+nosetests --cover-package=cloudfoundry --cover-package=models --cover-package=quotas --cover-package=scripts --with-coverage
+```
+
+### Start app for dev
 ```bash
+export APP_SETTINGS="config.DevelopmentConfig"
 python manage.py runserver
 ```
