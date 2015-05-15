@@ -33,7 +33,6 @@ python manage.py update_database
 
 ### Testing
 ```
-export APP_SETTINGS="config.TestingConfig"
 nosetests --cover-package=cloudfoundry --cover-package=models --cover-package=quotas --cover-package=scripts --with-coverage
 ```
 

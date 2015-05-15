@@ -16,7 +16,7 @@ class Service(db.Model):
 
     # Limiting the data by date
     __table_args__ = (db.PrimaryKeyConstraint(
-        'quota', 'guid', 'date_collected', name='quota_guid_date'),)
+        'quota', 'guid', 'date_collected', name='quota_serviceguid_date'),)
 
     def __init__(self, quota, guid, name):
         self.quota = quota
@@ -43,7 +43,7 @@ class Service(db.Model):
             cls.name, cls.guid, func.count(cls.date_collected))
         if start_date and end_date:
             q = q.filter(cls.date_collected.between(start_date, end_date))
-        q = q.filter_by(quota=quota_guid).group_by(cls.guid)
+        q = q.filter_by(quota=quota_guid).group_by(cls.guid, cls.name)
         return q.all()
 
 
@@ -126,8 +126,8 @@ class Quota(db.Model):
             'guid': self.guid,
             'name': self.name,
             'url': self.url,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at
+            'created_at': str(self.created_at),
+            'updated_at': str(self.updated_at)
         }
 
     def data_details(self, start_date=None, end_date=None):
@@ -140,8 +140,8 @@ class Quota(db.Model):
             'guid': self.guid,
             'name': self.name,
             'url': self.url,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at,
+            'created_at': str(self.created_at),
+            'updated_at': str(self.updated_at),
             'data': data,
             'services': services
         }
@@ -156,8 +156,8 @@ class Quota(db.Model):
             'guid': self.guid,
             'name': self.name,
             'url': self.url,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at,
+            'created_at': str(self.created_at),
+            'updated_at': str(self.updated_at),
             'data': data,
             'services': services
         }
