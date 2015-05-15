@@ -39,7 +39,7 @@ class CloudFoundry:
     def make_request(self, endpoint):
         """ Make request to specific endpoint """
         token = self.prepare_token()
-        url = 'https://api.{0}/{1}'.format(self.url, endpoint)
+        url = 'https://api.{0}{1}'.format(self.url, endpoint)
         headers = {'authorization': 'bearer ' + token}
         req = requests.get(url=url, headers=headers)
         return req
@@ -53,12 +53,12 @@ class CloudFoundry:
 
     def get_quotas(self):
         """ Get quota definitions """
-        req_iterator = self.yield_request(endpoint='v2/quota_definitions')
+        req_iterator = self.yield_request(endpoint='/v2/quota_definitions')
         for req in req_iterator:
             yield req
 
     def get_orgs(self):
         """ Get org data """
-        req_iterator = self.yield_request(endpoint='v2/organizations')
+        req_iterator = self.yield_request(endpoint='/v2/organizations')
         for req in req_iterator:
             yield req
