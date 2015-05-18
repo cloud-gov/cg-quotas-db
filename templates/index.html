@@ -1,1 +1,4 @@
-{{quotas}}
+Quota List <br>
+{% for quota in quotas %}
+    <a href="/quotas/{{quota.guid}}">{{quota.name}}</a><br>
+{% endfor %}

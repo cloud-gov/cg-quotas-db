@@ -271,7 +271,7 @@ class DatabaseForeignKeyTest(TestCase):
     def test_quota_data(self):
         """ Check that quota data can be added """
         # Adding QuotaData
-        quota_data = QuotaData(self.quota)
+        quota_data = QuotaData(self.quota, datetime.date(2014, 1, 1))
         quota_data.memory_limit = 1
         quota_data.total_routes = 2
         quota_data.total_services = 3
@@ -284,6 +284,7 @@ class DatabaseForeignKeyTest(TestCase):
         self.assertEqual(quota.data[0].memory_limit, 1)
         self.assertEqual(quota.data[0].total_routes, 2)
         self.assertEqual(quota.data[0].total_services, 3)
+        self.assertEqual(quota.data[0].date_collected.year, 2014)
 
     def test_primary_key_constraints_for_quotadata(self):
         """ Check that the PrimaryKeyConstraints work for QuotaData """
@@ -382,7 +383,9 @@ class DatabaseForeignKeyTest(TestCase):
     def test_service_data(self):
         """ Check that service data can be added """
         # Adding Service data
-        service_data = Service(quota=self.quota, guid='sid', name='test')
+        service_data = Service(
+            quota=self.quota, guid='sid', name='test',
+            date_collected=datetime.date(2014, 1, 1))
         self.quota.services.append(service_data)
         db.session.commit()
         # Retrieve Service data
@@ -390,6 +393,7 @@ class DatabaseForeignKeyTest(TestCase):
         self.assertEqual(quota.name, 'test_name')
         self.assertEqual(len(quota.services), 1)
         self.assertEqual(quota.services[0].guid, 'sid')
+        self.assertEqual(quota.services[0].date_collected.year, 2014)
 
     def test_primary_key_constraints_for_service_data(self):
         """ Check that the PrimaryKeyConstraints work for Service """
