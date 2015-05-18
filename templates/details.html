@@ -1,1 +1,15 @@
-{{quota}}
+{{quota.name}}<br>
+
+{% if quota.data %}
+    Memory Usage <br>
+    {% for memory in quota.data %}
+        Memory Amount: {{memory.0}} - Days: {{memory.1}} <br>
+    {% endfor %}
+{% endif %}
+
+{% if quota.services %}
+    Services<br>
+    {% for service in quota.services %}
+        Services Name: {{service.0}} - Days: {{service.2}} <br>
+    {% endfor %}
+{% endif %}

@@ -4,6 +4,7 @@ from cloudfoundry import CloudFoundry
 from models import Quota, QuotaData, Service
 from quotas import db
 
+
 """ App scripts """
 
 
@@ -27,7 +28,10 @@ def get_datetime(date_str):
 
 def update_quota_data(quota_model, entity_data):
     """ Add quota data to to database """
-    quota_data, data_created = get_or_create(QuotaData, quota=quota_model.guid)
+    quota_data, data_created = get_or_create(
+        model=QuotaData,
+        quota=quota_model.guid,
+        date_collected=datetime.date.today())
     quota_data.memory_limit = entity_data['memory_limit']
     quota_data.total_routes = entity_data['total_routes']
     quota_data.total_services = entity_data['total_services']
@@ -59,7 +63,8 @@ def load_services(space_summary, quota):
             model=Service,
             quota=quota.guid,
             guid=service['guid'],
-            name=service['name'])
+            name=service['name'],
+            date_collected=datetime.date.today())
         quota.services.append(service_instance)
         db.session.merge(quota)
         db.session.commit()

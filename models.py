@@ -18,11 +18,14 @@ class Service(db.Model):
     __table_args__ = (db.PrimaryKeyConstraint(
         'quota', 'guid', 'date_collected', name='quota_serviceguid_date'),)
 
-    def __init__(self, quota, guid, name):
+    def __init__(self, quota, guid, name, date_collected=None):
         self.quota = quota
         self.guid = guid
         self.name = name
-        self.date_collected = date.today()
+        if date_collected:
+            self.date_collected = date_collected
+        else:
+            self.date_collected = date.today()
 
     def __repr__(self):
         return '<guid {0} date {1}>'.format(self.quota, self.date_collected)
@@ -62,9 +65,12 @@ class QuotaData(db.Model):
     __table_args__ = (db.PrimaryKeyConstraint(
         'quota', 'date_collected', name='quota_guid_date'),)
 
-    def __init__(self, quota):
+    def __init__(self, quota, date_collected=None):
         self.quota = quota
-        self.date_collected = date.today()
+        if date_collected:
+            self.date_collected = date_collected
+        else:
+            self.date_collected = date.today()
 
     def __repr__(self):
         return '<guid {0} date {1}>'.format(self.quota, self.date_collected)
