@@ -1,4 +1,45 @@
-Quota List <br>
-{% for quota in quotas %}
-    <a href="/quotas/{{quota.guid}}">{{quota.name}}</a><br>
-{% endfor %}
+<!doctype html>
+<html ng-app="QuotaApp">
+  <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+  </head>
+
+  <body ng-controller="QuotaController">
+  <h1>Quotas</h1>
+
+    <form role="form" ng-submit="getResults()">
+
+    <select id="quota-selector" ng-model="quota">
+        {% for quota in quotas %}
+            <option value="{{quota.guid}}">{{quota.name}}
+        {% endfor %}
+    </select>
+
+      <input type="date" ng-model="start_date">
+      <input type="date" ng-model="end_date">
+      <button type="submit"ng-disabled="loading">Submit</button>
+
+    </form>
+
+    <div id="results">
+      {% raw %}
+          <h3>{{quota_data.name}}</h3>
+
+          <div ng-if="quota_data.created_at">
+            Created on: {{quota_data.created_at}}
+          </div>
+
+          <div ng-repeat="datum in quota_data.data">
+            <p>Memory: {{datum[0]}} - Days: {{datum[1]}}</p>
+          </div>
+
+          <div ng-repeat="service in quota_data.services">
+            <p>Service: {{service[0]}} Days: {{service[2]}}</p>
+          </div>
+
+      {% endraw %}
+    </div>
+
+  </body>
+</html>
