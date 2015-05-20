@@ -4,3 +4,4 @@ ideas.txt
 migrations
 __pycache__/
 .coverage
+fixtures/
