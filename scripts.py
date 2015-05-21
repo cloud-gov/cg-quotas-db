@@ -1,5 +1,7 @@
 import os
 import datetime
+import logging
+
 from cloudfoundry import CloudFoundry
 from models import Quota, QuotaData, Service
 from quotas import db
@@ -103,4 +105,6 @@ def load_data():
         url=os.getenv('CF_URL'),
         username=os.getenv('CF_USERNAME'),
         password=os.getenv('CF_PASSWORD'))
+    logging.info('Starting Data Update')
     load_quotas(cf_api=cf_api)
+    logging.info('Data Update Successful')
