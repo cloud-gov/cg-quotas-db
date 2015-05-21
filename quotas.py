@@ -1,4 +1,5 @@
 import os
+from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, jsonify, render_template
 from flask.ext.sqlalchemy import SQLAlchemy
 
@@ -6,6 +7,13 @@ app = Flask(__name__)
 app.config.from_object(os.environ['APP_SETTINGS'])
 
 db = SQLAlchemy(app)
+
+
+# Schedule Updates
+from scripts import load_data
+scheduler = BackgroundScheduler()
+job = scheduler.add_job(load_data, 'cron', hour='3,12,18')
+scheduler.start()
 
 from models import Quota
 
