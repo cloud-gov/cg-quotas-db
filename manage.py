@@ -19,5 +19,14 @@ def update_database():
     "Updates database with quotas"
     load_data()
 
+
+@manager.command
+def tests():
+    """ Run tests """
+    test_command = "nosetests --cover-package=cloudfoundry "
+    test_command += "--cover-package=models --cover-package=quotas "
+    test_command += "--cover-package=scripts --with-coverage"
+    call([test_command], shell=True)
+
 if __name__ == '__main__':
     manager.run()

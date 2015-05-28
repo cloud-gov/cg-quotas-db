@@ -1,0 +1,496 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      Content-Length: ['0']
+      User-Agent: [python-requests/2.7.0 CPython/3.4.2 Darwin/14.1.0]
+      accept: [application/json]
+      authorization: [Basic Y2Y6]
+    method: POST
+    uri: https://uaa.18f.gov/oauth/token?grant_type=password&username=fake.username%40gsa.gov&password=fake_password
+  response:
+    body: {string: '{"access_token":"fake_token","token_type":"bearer","refresh_token":"fake_refresh_token","expires_in":599,"scope":"password.write
+        cloud_controller.write openid cloud_controller.read","jti":"fake-b735-44d3-9e43-fake"}'}
+    headers:
+      Cache-Control: [no-store]
+      Connection: [keep-alive]
+      Content-Length: ['2141']
+      Content-Type: [application/json;charset=UTF-8]
+      Date: ['Thu, 14 May 2015 20:47:51 GMT']
+      Pragma: [no-cache]
+      Server: [Apache-Coyote/1.1]
+      X-Cf-Requestid: [7163e19f-78fe-43b4-7a06-7d9046c0f073]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.7.0 CPython/3.4.2 Darwin/14.1.0]
+      authorization: [bearer fake_token]
+    method: GET
+    uri: https://api.18f.gov/v2/organizations
+  response:
+    body: {string: "{\n  \"total_results\": 3,\n  \"total_pages\": 1,\n  \"prev_url\":
+        null,\n  \"next_url\": null,\n  \"resources\": [\n    {\n      \"metadata\":
+        {\n        \"guid\": \"533d8476-f3e9-4362-ba2a-a3fdde21bde2\",\n        \"url\":
+        \"/v2/organizations/533d8476-f3e9-4362-ba2a-a3fdde21bde2\",\n        \"created_at\":
+        \"2015-02-19T08:46:40Z\",\n        \"updated_at\": \"2015-04-08T18:56:00Z\"\n
+        \     },\n      \"entity\": {\n        \"name\": \"devops\",\n        \"billing_enabled\":
+        false,\n        \"quota_definition_guid\": \"f7963421-c06e-4847-9913-bcd0e6048fa2\",\n
+        \       \"status\": \"active\",\n        \"quota_definition_url\": \"/v2/quota_definitions/f7963421-c06e-4847-9913-bcd0e6048fa2\",\n
+        \       \"spaces_url\": \"/v2/organizations/533d8476-f3e9-4362-ba2a-a3fdde21bde2/spaces\",\n
+        \       \"domains_url\": \"/v2/organizations/533d8476-f3e9-4362-ba2a-a3fdde21bde2/domains\",\n
+        \       \"private_domains_url\": \"/v2/organizations/533d8476-f3e9-4362-ba2a-a3fdde21bde2/private_domains\",\n
+        \       \"users_url\": \"/v2/organizations/533d8476-f3e9-4362-ba2a-a3fdde21bde2/users\",\n
+        \       \"managers_url\": \"/v2/organizations/533d8476-f3e9-4362-ba2a-a3fdde21bde2/managers\",\n
+        \       \"billing_managers_url\": \"/v2/organizations/533d8476-f3e9-4362-ba2a-a3fdde21bde2/billing_managers\",\n
+        \       \"auditors_url\": \"/v2/organizations/533d8476-f3e9-4362-ba2a-a3fdde21bde2/auditors\",\n
+        \       \"app_events_url\": \"/v2/organizations/533d8476-f3e9-4362-ba2a-a3fdde21bde2/app_events\",\n
+        \       \"space_quota_definitions_url\": \"/v2/organizations/533d8476-f3e9-4362-ba2a-a3fdde21bde2/space_quota_definitions\"\n
+        \     }\n    },\n    {\n      \"metadata\": {\n        \"guid\": \"f190f9a3-d89f-4684-8ac4-6f76e32c3e05\",\n
+        \       \"url\": \"/v2/organizations/f190f9a3-d89f-4684-8ac4-6f76e32c3e05\",\n
+        \       \"created_at\": \"2015-02-20T17:47:20Z\",\n        \"updated_at\":
+        \"2015-04-08T18:40:16Z\"\n      },\n      \"entity\": {\n        \"name\":
+        \"foia\",\n        \"billing_enabled\": false,\n        \"quota_definition_guid\":
+        \"23fee4e2-7110-4128-81c8-ab6c01ae84a3\",\n        \"status\": \"active\",\n
+        \       \"quota_definition_url\": \"/v2/quota_definitions/23fee4e2-7110-4128-81c8-ab6c01ae84a3\",\n
+        \       \"spaces_url\": \"/v2/organizations/f190f9a3-d89f-4684-8ac4-6f76e32c3e05/spaces\",\n
+        \       \"domains_url\": \"/v2/organizations/f190f9a3-d89f-4684-8ac4-6f76e32c3e05/domains\",\n
+        \       \"private_domains_url\": \"/v2/organizations/f190f9a3-d89f-4684-8ac4-6f76e32c3e05/private_domains\",\n
+        \       \"users_url\": \"/v2/organizations/f190f9a3-d89f-4684-8ac4-6f76e32c3e05/users\",\n
+        \       \"managers_url\": \"/v2/organizations/f190f9a3-d89f-4684-8ac4-6f76e32c3e05/managers\",\n
+        \       \"billing_managers_url\": \"/v2/organizations/f190f9a3-d89f-4684-8ac4-6f76e32c3e05/billing_managers\",\n
+        \       \"auditors_url\": \"/v2/organizations/f190f9a3-d89f-4684-8ac4-6f76e32c3e05/auditors\",\n
+        \       \"app_events_url\": \"/v2/organizations/f190f9a3-d89f-4684-8ac4-6f76e32c3e05/app_events\",\n
+        \       \"space_quota_definitions_url\": \"/v2/organizations/f190f9a3-d89f-4684-8ac4-6f76e32c3e05/space_quota_definitions\"\n
+        \     }\n    },\n    {\n      \"metadata\": {\n        \"guid\": \"4a962676-e687-46c4-95f4-7a83712065c6\",\n
+        \       \"url\": \"/v2/organizations/4a962676-e687-46c4-95f4-7a83712065c6\",\n
+        \       \"created_at\": \"2015-03-02T19:58:26Z\",\n        \"updated_at\":
+        \"2015-05-07T17:37:54Z\"\n      },\n      \"entity\": {\n        \"name\":
+        \"sandbox\",\n        \"billing_enabled\": false,\n        \"quota_definition_guid\":
+        \"f7963421-c06e-4847-9913-bcd0e6048fa2\",\n        \"status\": \"active\",\n
+        \       \"quota_definition_url\": \"/v2/quota_definitions/f7963421-c06e-4847-9913-bcd0e6048fa2\",\n
+        \       \"spaces_url\": \"/v2/organizations/4a962676-e687-46c4-95f4-7a83712065c6/spaces\",\n
+        \       \"domains_url\": \"/v2/organizations/4a962676-e687-46c4-95f4-7a83712065c6/domains\",\n
+        \       \"private_domains_url\": \"/v2/organizations/4a962676-e687-46c4-95f4-7a83712065c6/private_domains\",\n
+        \       \"users_url\": \"/v2/organizations/4a962676-e687-46c4-95f4-7a83712065c6/users\",\n
+        \       \"managers_url\": \"/v2/organizations/4a962676-e687-46c4-95f4-7a83712065c6/managers\",\n
+        \       \"billing_managers_url\": \"/v2/organizations/4a962676-e687-46c4-95f4-7a83712065c6/billing_managers\",\n
+        \       \"auditors_url\": \"/v2/organizations/4a962676-e687-46c4-95f4-7a83712065c6/auditors\",\n
+        \       \"app_events_url\": \"/v2/organizations/4a962676-e687-46c4-95f4-7a83712065c6/app_events\",\n
+        \       \"space_quota_definitions_url\": \"/v2/organizations/4a962676-e687-46c4-95f4-7a83712065c6/space_quota_definitions\"\n
+        \     }\n    }\n  ]\n}"}
+    headers:
+      Connection: [keep-alive]
+      Content-Length: ['4343']
+      Content-Type: [application/json;charset=utf-8]
+      Date: ['Thu, 14 May 2015 20:47:51 GMT']
+      Server: [nginx]
+      X-Cf-Requestid: [5f0ce1e8-60e4-475c-63d2-305724254ce7]
+      X-Content-Type-Options: [nosniff]
+      X-Vcap-Request-Id: ['69ed7fde-dd53-4817-6309-5fbf5f62b290::d305b2a5-06a2-49b3-a7a2-4b0e9e466614']
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.7.0 CPython/3.4.2 Darwin/14.1.0]
+      authorization: [bearer fake_token]
+    method: GET
+    uri: https://api.18f.gov/v2/quota_definitions/f7963421-c06e-4847-9913-bcd0e6048fa2
+  response:
+    body: {string: "{\n  \"metadata\": {\n    \"guid\": \"f7963421-c06e-4847-9913-bcd0e6048fa2\",\n
+        \   \"url\": \"/v2/quota_definitions/f7963421-c06e-4847-9913-bcd0e6048fa2\",\n
+        \   \"created_at\": \"2015-04-08T18:55:21Z\",\n    \"updated_at\": \"2015-05-08T23:34:58Z\"\n
+        \ },\n  \"entity\": {\n    \"name\": \"DevOps\",\n    \"non_basic_services_allowed\":
+        false,\n    \"total_services\": 24,\n    \"total_routes\": 60,\n    \"memory_limit\":
+        15360,\n    \"trial_db_allowed\": false,\n    \"instance_memory_limit\": -1\n
+        \ }\n}"}
+    headers:
+      Connection: [keep-alive]
+      Content-Length: ['453']
+      Content-Type: [application/json;charset=utf-8]
+      Date: ['Thu, 14 May 2015 20:47:51 GMT']
+      Server: [nginx]
+      X-Cf-Requestid: [e3cf4efa-6cab-48fb-775f-4a9aa1aac305]
+      X-Content-Type-Options: [nosniff]
+      X-Vcap-Request-Id: ['3c3c153a-fd63-482d-61a0-6108052c91d0::18e16e49-715d-4995-9fc8-634fce2be2d2']
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.7.0 CPython/3.4.2 Darwin/14.1.0]
+      authorization: [bearer fake_token]
+    method: GET
+    uri: https://api.18f.gov/v2/organizations/533d8476-f3e9-4362-ba2a-a3fdde21bde2/spaces
+  response:
+    body: {string: "{\n  \"total_results\": 0,\n  \"total_pages\": 1,\n  \"prev_url\":
+        null,\n  \"next_url\": null,\n  \"resources\": [\n\n  ]\n}"}
+    headers:
+      Connection: [keep-alive]
+      Content-Length: ['107']
+      Content-Type: [application/json;charset=utf-8]
+      Date: ['Thu, 14 May 2015 20:47:51 GMT']
+      Server: [nginx]
+      X-Cf-Requestid: [3762baa8-4e83-46ee-6af2-0313cb69f53a]
+      X-Content-Type-Options: [nosniff]
+      X-Vcap-Request-Id: ['31c410a7-9a72-4046-595d-dfc46092a0af::d934149f-2224-413a-bfa1-f5750681c52c']
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.7.0 CPython/3.4.2 Darwin/14.1.0]
+      authorization: [bearer fake_token]
+    method: GET
+    uri: https://api.18f.gov/v2/quota_definitions/23fee4e2-7110-4128-81c8-ab6c01ae84a3
+  response:
+    body: {string: "{\n  \"metadata\": {\n    \"guid\": \"23fee4e2-7110-4128-81c8-ab6c01ae84a3\",\n
+        \   \"url\": \"/v2/quota_definitions/23fee4e2-7110-4128-81c8-ab6c01ae84a3\",\n
+        \   \"created_at\": \"2015-04-08T18:39:55Z\",\n    \"updated_at\": null\n
+        \ },\n  \"entity\": {\n    \"name\": \"OCSIT-20141001-20150228-02\",\n    \"non_basic_services_allowed\":
+        false,\n    \"total_services\": 6,\n    \"total_routes\": 20,\n    \"memory_limit\":
+        7680,\n    \"trial_db_allowed\": false,\n    \"instance_memory_limit\": -1\n
+        \ }\n}"}
+    headers:
+      Connection: [keep-alive]
+      Content-Length: ['453']
+      Content-Type: [application/json;charset=utf-8]
+      Date: ['Thu, 14 May 2015 20:47:51 GMT']
+      Server: [nginx]
+      X-Cf-Requestid: [c26d0e01-5b36-4bfc-45ad-9e11afc9a18d]
+      X-Content-Type-Options: [nosniff]
+      X-Vcap-Request-Id: ['3532d984-a2b6-444b-4173-85dd89c4fec2::db7934ab-f14e-496f-a58c-c00208f2c627']
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.7.0 CPython/3.4.2 Darwin/14.1.0]
+      authorization: [bearer fake_token]
+    method: GET
+    uri: https://api.18f.gov/v2/organizations/f190f9a3-d89f-4684-8ac4-6f76e32c3e05/spaces
+  response:
+    body: {string: "{\n  \"total_results\": 2,\n  \"total_pages\": 1,\n  \"prev_url\":
+        null,\n  \"next_url\": null,\n  \"resources\": [\n    {\n      \"metadata\":
+        {\n        \"guid\": \"37bba51c-0719-4666-9d22-7d2d35cf0b8b\",\n        \"url\":
+        \"/v2/spaces/37bba51c-0719-4666-9d22-7d2d35cf0b8b\",\n        \"created_at\":
+        \"2015-02-27T17:21:44Z\",\n        \"updated_at\": null\n      },\n      \"entity\":
+        {\n        \"name\": \"hub\",\n        \"organization_guid\": \"f190f9a3-d89f-4684-8ac4-6f76e32c3e05\",\n
+        \       \"space_quota_definition_guid\": null,\n        \"organization_url\":
+        \"/v2/organizations/f190f9a3-d89f-4684-8ac4-6f76e32c3e05\",\n        \"developers_url\":
+        \"/v2/spaces/37bba51c-0719-4666-9d22-7d2d35cf0b8b/developers\",\n        \"managers_url\":
+        \"/v2/spaces/37bba51c-0719-4666-9d22-7d2d35cf0b8b/managers\",\n        \"auditors_url\":
+        \"/v2/spaces/37bba51c-0719-4666-9d22-7d2d35cf0b8b/auditors\",\n        \"apps_url\":
+        \"/v2/spaces/37bba51c-0719-4666-9d22-7d2d35cf0b8b/apps\",\n        \"routes_url\":
+        \"/v2/spaces/37bba51c-0719-4666-9d22-7d2d35cf0b8b/routes\",\n        \"domains_url\":
+        \"/v2/spaces/37bba51c-0719-4666-9d22-7d2d35cf0b8b/domains\",\n        \"service_instances_url\":
+        \"/v2/spaces/37bba51c-0719-4666-9d22-7d2d35cf0b8b/service_instances\",\n        \"app_events_url\":
+        \"/v2/spaces/37bba51c-0719-4666-9d22-7d2d35cf0b8b/app_events\",\n        \"events_url\":
+        \"/v2/spaces/37bba51c-0719-4666-9d22-7d2d35cf0b8b/events\",\n        \"security_groups_url\":
+        \"/v2/spaces/37bba51c-0719-4666-9d22-7d2d35cf0b8b/security_groups\"\n      }\n
+        \   },\n    {\n      \"metadata\": {\n        \"guid\": \"770f7ec0-db08-42c6-a69b-5893fe0f8b1a\",\n
+        \       \"url\": \"/v2/spaces/770f7ec0-db08-42c6-a69b-5893fe0f8b1a\",\n        \"created_at\":
+        \"2015-03-19T17:51:35Z\",\n        \"updated_at\": null\n      },\n      \"entity\":
+        {\n        \"name\": \"staging\",\n        \"organization_guid\": \"f190f9a3-d89f-4684-8ac4-6f76e32c3e05\",\n
+        \       \"space_quota_definition_guid\": null,\n        \"organization_url\":
+        \"/v2/organizations/f190f9a3-d89f-4684-8ac4-6f76e32c3e05\",\n        \"developers_url\":
+        \"/v2/spaces/770f7ec0-db08-42c6-a69b-5893fe0f8b1a/developers\",\n        \"managers_url\":
+        \"/v2/spaces/770f7ec0-db08-42c6-a69b-5893fe0f8b1a/managers\",\n        \"auditors_url\":
+        \"/v2/spaces/770f7ec0-db08-42c6-a69b-5893fe0f8b1a/auditors\",\n        \"apps_url\":
+        \"/v2/spaces/770f7ec0-db08-42c6-a69b-5893fe0f8b1a/apps\",\n        \"routes_url\":
+        \"/v2/spaces/770f7ec0-db08-42c6-a69b-5893fe0f8b1a/routes\",\n        \"domains_url\":
+        \"/v2/spaces/770f7ec0-db08-42c6-a69b-5893fe0f8b1a/domains\",\n        \"service_instances_url\":
+        \"/v2/spaces/770f7ec0-db08-42c6-a69b-5893fe0f8b1a/service_instances\",\n        \"app_events_url\":
+        \"/v2/spaces/770f7ec0-db08-42c6-a69b-5893fe0f8b1a/app_events\",\n        \"events_url\":
+        \"/v2/spaces/770f7ec0-db08-42c6-a69b-5893fe0f8b1a/events\",\n        \"security_groups_url\":
+        \"/v2/spaces/770f7ec0-db08-42c6-a69b-5893fe0f8b1a/security_groups\"\n      }\n
+        \   }\n  ]\n}"}
+    headers:
+      Connection: [keep-alive]
+      Content-Length: ['2803']
+      Content-Type: [application/json;charset=utf-8]
+      Date: ['Thu, 14 May 2015 20:47:52 GMT']
+      Server: [nginx]
+      X-Cf-Requestid: [98523646-e979-48df-58c1-955e3c72b156]
+      X-Content-Type-Options: [nosniff]
+      X-Vcap-Request-Id: ['3c0aae10-b442-4e75-7beb-38e5fcf8f760::69fdf752-9920-43fb-8680-768e41c84d11']
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.7.0 CPython/3.4.2 Darwin/14.1.0]
+      authorization: [bearer fake_token]
+    method: GET
+    uri: https://api.18f.gov/v2/spaces/37bba51c-0719-4666-9d22-7d2d35cf0b8b/summary
+  response:
+    body: {string: "{\n  \"guid\": \"37bba51c-0719-4666-9d22-7d2d35cf0b8b\",\n  \"name\":
+        \"hub\",\n  \"apps\": [\n    {\n      \"guid\": \"930e3aff-728b-40ec-91d1-0c7aa3504706\",\n
+        \     \"urls\": [\n        \"foia-a.cf.18f.us\"\n      ],\n      \"routes\":
+        [\n        {\n          \"guid\": \"11f18c25-672c-4d0a-b545-1def265fd03a\",\n
+        \         \"host\": \"foia-a\",\n          \"domain\": {\n            \"guid\":
+        \"a0948d28-abe2-4a2f-b8c5-738e3fb60c24\",\n            \"name\": \"cf.18f.us\"\n
+        \         }\n        }\n      ],\n      \"service_count\": 0,\n      \"service_names\":
+        [\n\n      ],\n      \"running_instances\": 0,\n      \"name\": \"foia-a\",\n
+        \     \"production\": false,\n      \"space_guid\": \"37bba51c-0719-4666-9d22-7d2d35cf0b8b\",\n
+        \     \"stack_guid\": \"5abae1f0-9432-4da3-bc3f-c2d58f8960dd\",\n      \"buildpack\":
+        null,\n      \"detected_buildpack\": \"Python\",\n      \"environment_json\":
+        {\n        \"DATABASE_URL\": \"postgres://openfoia:fIz2yBBmb%oo$m4D@openfoia-production-cf.ch0moygcdwsl.us-east-1.rds.amazonaws.com:5432/openfoiadb\",\n
+        \       \"DJANGO_SETTINGS_MODULE\": \"foia_hub.settings.production\",\n        \"FOIA_ANALYTICS_ID\":
+        \"UA-48605964-15\",\n        \"FOIA_AWS_ACCESS_KEY_ID\": \"AKIAJBD4R7CTIR65V7ZA\",\n
+        \       \"FOIA_AWS_SECRET_ACCESS_KEY\": \"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\",\n
+        \       \"FOIA_S3_STATIC_BUCKET_NAME\": \"18f-foia-static\",\n        \"FOIA_SECRET_SESSION_KEY\":
+        \"J#1]2xD)+s7Yr~&pc8^Yk\",\n        \"NEW_RELIC_APP_NAME\": \"foia-cf\",\n
+        \       \"NEW_RELIC_LICENSE_KEY\": \"b05ed0b62e34347a800b34ddcc1362c63d3e0700\",\n
+        \       \"WEB_CONCURRENCY\": \"3\"\n      },\n      \"memory\": 512,\n      \"instances\":
+        4,\n      \"disk_quota\": 1024,\n      \"state\": \"STOPPED\",\n      \"version\":
+        \"d13b3001-0d23-400e-bb0a-c6ac333a9fbe\",\n      \"command\": \"bash cf.sh\",\n
+        \     \"console\": false,\n      \"debug\": null,\n      \"staging_task_id\":
+        \"9e22725c6947455890f8fa3a16526ea8\",\n      \"package_state\": \"STAGED\",\n
+        \     \"health_check_type\": \"port\",\n      \"health_check_timeout\": 180,\n
+        \     \"staging_failed_reason\": null,\n      \"diego\": false,\n      \"docker_image\":
+        null,\n      \"package_updated_at\": \"2015-04-29T16:24:18Z\",\n      \"detected_start_command\":
+        \"bash cf.sh\"\n    },\n    {\n      \"guid\": \"7f07448f-1e34-4965-aaa5-5252b04cf4b3\",\n
+        \     \"urls\": [\n        \"open.foia.gov\",\n        \"foia-b.cf.18f.us\"\n
+        \     ],\n      \"routes\": [\n        {\n          \"guid\": \"e5bd5866-f213-4da7-b932-d90355419fe6\",\n
+        \         \"host\": \"\",\n          \"domain\": {\n            \"guid\":
+        \"396ea594-f7e8-4944-8d0a-bb2c52c67077\",\n            \"name\": \"open.foia.gov\"\n
+        \         }\n        },\n        {\n          \"guid\": \"ba0af66f-f31b-4ad6-878e-4afcb7a416ab\",\n
+        \         \"host\": \"foia-b\",\n          \"domain\": {\n            \"guid\":
+        \"a0948d28-abe2-4a2f-b8c5-738e3fb60c24\",\n            \"name\": \"cf.18f.us\"\n
+        \         }\n        }\n      ],\n      \"service_count\": 0,\n      \"service_names\":
+        [\n\n      ],\n      \"running_instances\": 4,\n      \"name\": \"foia-b\",\n
+        \     \"production\": false,\n      \"space_guid\": \"37bba51c-0719-4666-9d22-7d2d35cf0b8b\",\n
+        \     \"stack_guid\": \"5abae1f0-9432-4da3-bc3f-c2d58f8960dd\",\n      \"buildpack\":
+        null,\n      \"detected_buildpack\": \"Python\",\n      \"environment_json\":
+        {\n        \"DATABASE_URL\": \"postgres://openfoia:fIz2yBBmb%oo$m4D@openfoia-production-cf.ch0moygcdwsl.us-east-1.rds.amazonaws.com:5432/openfoiadb\",\n
+        \       \"DJANGO_SETTINGS_MODULE\": \"foia_hub.settings.production\",\n        \"FOIA_ANALYTICS_ID\":
+        \"UA-48605964-15\",\n        \"FOIA_AWS_ACCESS_KEY_ID\": \"AKIAJBD4R7CTIR65V7ZA\",\n
+        \       \"FOIA_AWS_SECRET_ACCESS_KEY\": \"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\",\n
+        \       \"FOIA_S3_STATIC_BUCKET_NAME\": \"18f-foia-static\",\n        \"FOIA_SECRET_SESSION_KEY\":
+        \"J#1]2xD)+s7Yr~&pc8^Yk\",\n        \"NEW_RELIC_APP_NAME\": \"foia-cf\",\n
+        \       \"NEW_RELIC_LICENSE_KEY\": \"b05ed0b62e34347a800b34ddcc1362c63d3e0700\",\n
+        \       \"WEB_CONCURRENCY\": \"3\"\n      },\n      \"memory\": 512,\n      \"instances\":
+        4,\n      \"disk_quota\": 1024,\n      \"state\": \"STARTED\",\n      \"version\":
+        \"b5759600-5e3f-4e81-8023-0cebf72cb1c3\",\n      \"command\": \"bash cf.sh\",\n
+        \     \"console\": false,\n      \"debug\": null,\n      \"staging_task_id\":
+        \"54ec601564e043f48adc72c5db1650c6\",\n      \"package_state\": \"STAGED\",\n
+        \     \"health_check_type\": \"port\",\n      \"health_check_timeout\": 180,\n
+        \     \"staging_failed_reason\": null,\n      \"diego\": false,\n      \"docker_image\":
+        null,\n      \"package_updated_at\": \"2015-05-04T13:35:28Z\",\n      \"detected_start_command\":
+        \"bash cf.sh\"\n    }\n  ],\n  \"services\": [\n    {\n      \"guid\": \"cd02da3d-b50f-4f06-80d3-8da69c5a9ada\",\n
+        \     \"name\": \"hub-es15-highmem\",\n      \"bound_app_count\": 0\n    },\n
+        \   {\n      \"guid\": \"90c6fd02-c9de-4282-9a93-5c7665465280\",\n      \"name\":
+        \"es\",\n      \"bound_app_count\": 0,\n      \"last_operation\": {\n        \"type\":
+        \"create\",\n        \"state\": \"succeeded\",\n        \"description\": \"\",\n
+        \       \"updated_at\": \"2015-03-20T19:09:45Z\"\n      },\n      \"dashboard_url\":
+        null,\n      \"service_plan\": {\n        \"guid\": \"dd318f95-4e82-4edd-98f2-02ec5acf9893\",\n
+        \       \"name\": \"free\",\n        \"service\": {\n          \"guid\": \"cdaa4499-2054-437b-b2e7-0701ea80d94e\",\n
+        \         \"label\": \"elasticsearch\",\n          \"provider\": \"core\",\n
+        \         \"version\": \"0.20\"\n        }\n      }\n    }\n  ]\n}"}
+    headers:
+      Connection: [keep-alive]
+      Content-Length: ['5049']
+      Content-Type: [application/json;charset=utf-8]
+      Date: ['Thu, 14 May 2015 20:47:52 GMT']
+      Server: [nginx]
+      X-Cf-Requestid: [39c94ca2-7c3c-45a3-49d6-afcbf1241fe6]
+      X-Content-Type-Options: [nosniff]
+      X-Vcap-Request-Id: ['9f516092-1640-4130-5648-515a81b95b20::b982febf-35f5-49ac-8c54-3b5e7e02fa33']
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.7.0 CPython/3.4.2 Darwin/14.1.0]
+      authorization: [bearer fake_token]
+    method: GET
+    uri: https://api.18f.gov/v2/spaces/770f7ec0-db08-42c6-a69b-5893fe0f8b1a/summary
+  response:
+    body: {string: "{\n  \"guid\": \"770f7ec0-db08-42c6-a69b-5893fe0f8b1a\",\n  \"name\":
+        \"staging\",\n  \"apps\": [\n    {\n      \"guid\": \"d67b99cf-5da2-4765-a466-5f1f9bb6a350\",\n
+        \     \"urls\": [\n        \"openfoia-staging.cf.18f.us\"\n      ],\n      \"routes\":
+        [\n        {\n          \"guid\": \"92d0e4bd-b3bf-40c3-b33e-34be34d39b56\",\n
+        \         \"host\": \"openfoia-staging\",\n          \"domain\": {\n            \"guid\":
+        \"a0948d28-abe2-4a2f-b8c5-738e3fb60c24\",\n            \"name\": \"cf.18f.us\"\n
+        \         }\n        }\n      ],\n      \"service_count\": 0,\n      \"service_names\":
+        [\n\n      ],\n      \"running_instances\": 1,\n      \"name\": \"openfoia-staging\",\n
+        \     \"production\": false,\n      \"space_guid\": \"770f7ec0-db08-42c6-a69b-5893fe0f8b1a\",\n
+        \     \"stack_guid\": \"5abae1f0-9432-4da3-bc3f-c2d58f8960dd\",\n      \"buildpack\":
+        \"https://github.com/cloudfoundry/buildpack-python.git\",\n      \"detected_buildpack\":
+        null,\n      \"environment_json\": {\n        \"DATABASE_URL\": \"postgres://openfoiastaging:1T5DEyubz&J@openfoia-staging-cf.ch0moygcdwsl.us-east-1.rds.amazonaws.com:5432/openfoiastaging\",\n
+        \       \"DJANGO_SETTINGS_MODULE\": \"foia_hub.settings.staging\",\n        \"FOIA_ANALYTICS_ID\":
+        \"UA-48605964-15\",\n        \"FOIA_AWS_ACCESS_KEY_ID\": \"AKIAJBD4R7CTIR65V7ZA\",\n
+        \       \"FOIA_AWS_SECRET_ACCESS_KEY\": \"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\",\n
+        \       \"FOIA_S3_STATIC_BUCKET_NAME\": \"18f-foia-staging-static\",\n        \"FOIA_SECRET_SESSION_KEY\":
+        \"3thgp=ib=no$^hmrr1%bnoz+sqxt2hpttjgspo^jvezo^\",\n        \"NEW_RELIC_APP_NAME\":
+        \"openfoia-staging\",\n        \"NEW_RELIC_LICENSE_KEY\": \"b05ed0b62e34347a800b34ddcc1362c63d3e0700\"\n
+        \     },\n      \"memory\": 512,\n      \"instances\": 1,\n      \"disk_quota\":
+        1024,\n      \"state\": \"STARTED\",\n      \"version\": \"446696ea-c517-426b-a1f5-c52b2bc28857\",\n
+        \     \"command\": \"bash cf.sh\",\n      \"console\": false,\n      \"debug\":
+        null,\n      \"staging_task_id\": \"f6e553ca604f45e1bbe2cbeaee12b4d9\",\n
+        \     \"package_state\": \"STAGED\",\n      \"health_check_type\": \"port\",\n
+        \     \"health_check_timeout\": 180,\n      \"staging_failed_reason\": null,\n
+        \     \"diego\": false,\n      \"docker_image\": null,\n      \"package_updated_at\":
+        \"2015-05-11T18:13:09Z\",\n      \"detected_start_command\": \"bash cf.sh\"\n
+        \   },\n    {\n      \"guid\": \"e7cae993-078b-4569-80b6-e2bbacf35ebb\",\n
+        \     \"urls\": [\n        \"krang-staging.cf.18f.us\"\n      ],\n      \"routes\":
+        [\n        {\n          \"guid\": \"d2d0d386-99e1-4246-aae6-8bc44dbf12fc\",\n
+        \         \"host\": \"krang-staging\",\n          \"domain\": {\n            \"guid\":
+        \"a0948d28-abe2-4a2f-b8c5-738e3fb60c24\",\n            \"name\": \"cf.18f.us\"\n
+        \         }\n        }\n      ],\n      \"service_count\": 2,\n      \"service_names\":
+        [\n        \"es\",\n        \"staging-es15-highmem\"\n      ],\n      \"running_instances\":
+        1,\n      \"name\": \"krang-staging\",\n      \"production\": false,\n      \"space_guid\":
+        \"770f7ec0-db08-42c6-a69b-5893fe0f8b1a\",\n      \"stack_guid\": \"5abae1f0-9432-4da3-bc3f-c2d58f8960dd\",\n
+        \     \"buildpack\": null,\n      \"detected_buildpack\": \"Python\",\n      \"environment_json\":
+        {\n        \"AWS_ACCESS_KEY_ID\": \"AKIAIWNOKY5EB6TKPNGQ\",\n        \"AWS_SECRET_ACCESS_KEY\":
+        \"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\",\n        \"DATABASE_URL\": \"postgres://krang:CRAw7uya@krang-staging-cf.ch0moygcdwsl.us-east-1.rds.amazonaws.com:5432/krangstagingcf\",\n
+        \       \"DJANGO_SETTINGS_MODULE\": \"foia_hub.settings.staging\",\n        \"FOIA_ANALYTICS_ID\":
+        \"changeme\",\n        \"FOIA_AWS_ACCESS_KEY_ID\": \"AKIAJBD4R7CTIR65V7ZA\",\n
+        \       \"FOIA_AWS_SECRET_ACCESS_KEY\": \"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\",\n
+        \       \"FOIA_S3_DOCS_BUCKET_NAME\": \"18f-foia-krang-docs\",\n        \"FOIA_S3_STATIC_BUCKET_NAME\":
+        \"18f-foia-krang-static\",\n        \"FOIA_SECRET_SESSION_KEY\": \"3thgp=ib=no$^hmrr1%bnoz+sqxt2hpttjgspo^jvezo^\",\n
+        \       \"NEW_RELIC_APP_NAME\": \"krang-staging\",\n        \"NEW_RELIC_LICENSE_KEY\":
+        \"b05ed0b62e34347a800b34ddcc1362c63d3e0700\"\n      },\n      \"memory\":
+        512,\n      \"instances\": 1,\n      \"disk_quota\": 1024,\n      \"state\":
+        \"STARTED\",\n      \"version\": \"f7ca7431-ce0e-4d60-b61c-7e8fd5934298\",\n
+        \     \"command\": \"bash cf.sh\",\n      \"console\": false,\n      \"debug\":
+        null,\n      \"staging_task_id\": \"b46b5d6acc6e4c8eb1ef8034f983477a\",\n
+        \     \"package_state\": \"STAGED\",\n      \"health_check_type\": \"port\",\n
+        \     \"health_check_timeout\": 180,\n      \"staging_failed_reason\": null,\n
+        \     \"diego\": false,\n      \"docker_image\": null,\n      \"package_updated_at\":
+        \"2015-05-12T15:57:36Z\",\n      \"detected_start_command\": \"bash cf.sh\"\n
+        \   }\n  ],\n  \"services\": [\n    {\n      \"guid\": \"4b2bfb07-9c69-45e8-9c39-a859b971dd88\",\n
+        \     \"name\": \"es\",\n      \"bound_app_count\": 1,\n      \"last_operation\":
+        {\n        \"type\": \"create\",\n        \"state\": \"succeeded\",\n        \"description\":
+        \"\",\n        \"updated_at\": \"2015-04-30T16:26:29Z\"\n      },\n      \"dashboard_url\":
+        null,\n      \"service_plan\": {\n        \"guid\": \"dd318f95-4e82-4edd-98f2-02ec5acf9893\",\n
+        \       \"name\": \"free\",\n        \"service\": {\n          \"guid\": \"cdaa4499-2054-437b-b2e7-0701ea80d94e\",\n
+        \         \"label\": \"elasticsearch\",\n          \"provider\": \"core\",\n
+        \         \"version\": \"0.20\"\n        }\n      }\n    },\n    {\n      \"guid\":
+        \"7f5e849b-44fd-4b6d-ab0a-6cfebd3f35fc\",\n      \"name\": \"es-15\",\n      \"bound_app_count\":
+        0\n    },\n    {\n      \"guid\": \"3e321dad-fd64-4ee0-9d38-2569fae2227a\",\n
+        \     \"name\": \"staging-es15-highmem\",\n      \"bound_app_count\": 1\n
+        \   },\n    {\n      \"guid\": \"46e1713f-bd30-44da-933f-988cb7f46136\",\n
+        \     \"name\": \"elasticsearch-15\",\n      \"bound_app_count\": 0\n    }\n
+        \ ]\n}"}
+    headers:
+      Connection: [keep-alive]
+      Content-Length: ['5368']
+      Content-Type: [application/json;charset=utf-8]
+      Date: ['Thu, 14 May 2015 20:47:53 GMT']
+      Server: [nginx]
+      X-Cf-Requestid: [79374369-62d6-44eb-740f-d924fb6d3d3f]
+      X-Content-Type-Options: [nosniff]
+      X-Vcap-Request-Id: ['9c23f5b4-8f64-4c9c-51ba-563c42484d91::fd88dd74-14bf-4c19-9c91-9210bc1ce0d7']
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.7.0 CPython/3.4.2 Darwin/14.1.0]
+      authorization: [bearer fake_token]
+    method: GET
+    uri: https://api.18f.gov/v2/quota_definitions/f7963421-c06e-4847-9913-bcd0e6048fa2
+  response:
+    body: {string: "{\n  \"metadata\": {\n    \"guid\": \"f7963421-c06e-4847-9913-bcd0e6048fa2\",\n
+        \   \"url\": \"/v2/quota_definitions/f7963421-c06e-4847-9913-bcd0e6048fa2\",\n
+        \   \"created_at\": \"2015-04-08T18:55:21Z\",\n    \"updated_at\": \"2015-05-08T23:34:58Z\"\n
+        \ },\n  \"entity\": {\n    \"name\": \"DevOps\",\n    \"non_basic_services_allowed\":
+        false,\n    \"total_services\": 24,\n    \"total_routes\": 60,\n    \"memory_limit\":
+        15360,\n    \"trial_db_allowed\": false,\n    \"instance_memory_limit\": -1\n
+        \ }\n}"}
+    headers:
+      Connection: [keep-alive]
+      Content-Length: ['453']
+      Content-Type: [application/json;charset=utf-8]
+      Date: ['Thu, 14 May 2015 20:47:53 GMT']
+      Server: [nginx]
+      X-Cf-Requestid: [f974e42f-5d2f-4e17-5390-859eea646918]
+      X-Content-Type-Options: [nosniff]
+      X-Vcap-Request-Id: ['d695dded-fccf-47fa-53f6-68d7b7442c42::e0466987-4fc5-4267-8028-600eb212395b']
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.7.0 CPython/3.4.2 Darwin/14.1.0]
+      authorization: [bearer fake_token]
+    method: GET
+    uri: https://api.18f.gov/v2/organizations/4a962676-e687-46c4-95f4-7a83712065c6/spaces
+  response:
+    body: {string: "{\n  \"total_results\": 1,\n  \"total_pages\": 1,\n  \"prev_url\":
+        null,\n  \"next_url\": null,\n  \"resources\": [\n    {\n      \"metadata\":
+        {\n        \"guid\": \"d781e851-9114-4198-8aa6-0641d3526d48\",\n        \"url\":
+        \"/v2/spaces/d781e851-9114-4198-8aa6-0641d3526d48\",\n        \"created_at\":
+        \"2015-03-03T19:25:37Z\",\n        \"updated_at\": null\n      },\n      \"entity\":
+        {\n        \"name\": \"gabriel.ramirez\",\n        \"organization_guid\":
+        \"4a962676-e687-46c4-95f4-7a83712065c6\",\n        \"space_quota_definition_guid\":
+        null,\n        \"organization_url\": \"/v2/organizations/4a962676-e687-46c4-95f4-7a83712065c6\",\n
+        \       \"developers_url\": \"/v2/spaces/d781e851-9114-4198-8aa6-0641d3526d48/developers\",\n
+        \       \"managers_url\": \"/v2/spaces/d781e851-9114-4198-8aa6-0641d3526d48/managers\",\n
+        \       \"auditors_url\": \"/v2/spaces/d781e851-9114-4198-8aa6-0641d3526d48/auditors\",\n
+        \       \"apps_url\": \"/v2/spaces/d781e851-9114-4198-8aa6-0641d3526d48/apps\",\n
+        \       \"routes_url\": \"/v2/spaces/d781e851-9114-4198-8aa6-0641d3526d48/routes\",\n
+        \       \"domains_url\": \"/v2/spaces/d781e851-9114-4198-8aa6-0641d3526d48/domains\",\n
+        \       \"service_instances_url\": \"/v2/spaces/d781e851-9114-4198-8aa6-0641d3526d48/service_instances\",\n
+        \       \"app_events_url\": \"/v2/spaces/d781e851-9114-4198-8aa6-0641d3526d48/app_events\",\n
+        \       \"events_url\": \"/v2/spaces/d781e851-9114-4198-8aa6-0641d3526d48/events\",\n
+        \       \"security_groups_url\": \"/v2/spaces/d781e851-9114-4198-8aa6-0641d3526d48/security_groups\"\n
+        \     }\n    }\n  ]\n}"}
+    headers:
+      Connection: [keep-alive]
+      Content-Length: ['1464']
+      Content-Type: [application/json;charset=utf-8]
+      Date: ['Thu, 14 May 2015 20:47:53 GMT']
+      Server: [nginx]
+      X-Cf-Requestid: [28faeee8-ac16-4237-6d35-697830d2d01b]
+      X-Content-Type-Options: [nosniff]
+      X-Vcap-Request-Id: ['925042e4-1d31-4680-44c1-1c0b5d922ca3::5e9cdb08-5ba7-4703-883e-b80241de98ad']
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.7.0 CPython/3.4.2 Darwin/14.1.0]
+      authorization: [bearer fake_token]
+    method: GET
+    uri: https://api.18f.gov/v2/spaces/d781e851-9114-4198-8aa6-0641d3526d48/summary
+  response:
+    body: {string: "{\n  \"guid\": \"d781e851-9114-4198-8aa6-0641d3526d48\",\n  \"name\":
+        \"gabriel.ramirez\",\n  \"apps\": [\n\n  ],\n  \"services\": [\n\n  ]\n}"}
+    headers:
+      Connection: [keep-alive]
+      Content-Length: ['121']
+      Content-Type: [application/json;charset=utf-8]
+      Date: ['Thu, 14 May 2015 20:47:53 GMT']
+      Server: [nginx]
+      X-Cf-Requestid: [9527121b-140d-4e17-568f-1f852f17f318]
+      X-Content-Type-Options: [nosniff]
+      X-Vcap-Request-Id: ['297c3b7f-679a-4052-4560-d48a93f6bf1e::d30f79ba-2d4d-4882-8e98-4d8cbd37a3c2']
+    status: {code: 200, message: OK}
+version: 1
