@@ -1,4 +1,5 @@
 import os
+from subprocess import call
 
 from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
