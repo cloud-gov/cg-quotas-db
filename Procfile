@@ -1,1 +1,1 @@
-web: gunicorn quotas:app
+web: gunicorn quotas_app:app

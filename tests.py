@@ -8,8 +8,8 @@ import types
 import unittest
 
 # App imports
-from cloudfoundry import CloudFoundry
-from quotas import app, db
+from CloudFoundry import CloudFoundry
+from quotas_app import app, db
 from models import Quota, QuotaData, Service
 import scripts
 import vcr

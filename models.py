@@ -1,5 +1,5 @@
 from datetime import date
-from quotas import db
+from quotas_app import db
 from sqlalchemy import func
 from sqlalchemy.orm import relationship
 

@@ -2,9 +2,9 @@ import os
 import datetime
 import logging
 
-from cloudfoundry import CloudFoundry
+from CloudFoundry import CloudFoundry
 from models import Quota, QuotaData, Service
-from quotas import db
+from quotas_app import db
 
 
 """ App scripts """

@@ -1,9 +1,10 @@
 import os
+from subprocess import call
 
 from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
 
-from quotas import app, db
+from quotas_app import app, db
 from scripts import load_data
 app.config.from_object(os.environ['APP_SETTINGS'])
 
