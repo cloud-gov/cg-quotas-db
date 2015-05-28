@@ -24,8 +24,8 @@ def update_database():
 @manager.command
 def tests():
     """ Run tests """
-    test_command = "nosetests --cover-package=cloudfoundry "
-    test_command += "--cover-package=models --cover-package=quotas "
+    test_command = "nosetests --cover-package=CloudFoundry "
+    test_command += "--cover-package=models --cover-package=quotas_app "
     test_command += "--cover-package=scripts --with-coverage"
     call([test_command], shell=True)
 
