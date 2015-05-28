@@ -8,4 +8,4 @@ if [ $CF_INSTANCE_INDEX = "0" ]; then
     echo "----- Load Database -----"
     python manage.py update_database
 fi
-gunicorn quotas:app --log-file -
+gunicorn quotas_app:app --log-file -
