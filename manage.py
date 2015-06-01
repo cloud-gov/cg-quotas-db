@@ -1,4 +1,5 @@
 import os
+from subprocess import call
 
 from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
@@ -18,6 +19,15 @@ manager.add_command('db', MigrateCommand)
 def update_database():
     "Updates database with quotas"
     load_data()
+
+
+@manager.command
+def tests():
+    """ Run tests """
+    test_command = "nosetests --cover-package=cloudfoundry "
+    test_command += "--cover-package=models --cover-package=quotas "
+    test_command += "--cover-package=scripts --with-coverage"
+    call([test_command], shell=True)
 
 if __name__ == '__main__':
     manager.run()

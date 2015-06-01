@@ -32,8 +32,13 @@ python manage.py update_database
 ```
 
 ### Testing
+Install the dev requirements
+```bash
+pip install -r requirements-dev.txt
 ```
-nosetests --cover-package=cloudfoundry --cover-package=models --cover-package=quotas --cover-package=scripts --with-coverage
+Run the tests
+```
+python manage.py tests
 ```
 
 ### Start app for dev
