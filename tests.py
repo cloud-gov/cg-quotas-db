@@ -12,10 +12,10 @@ from cloudfoundry import CloudFoundry
 from quotas import app, db
 from models import Quota, QuotaData, Service
 import scripts
+import vcr
 
 # Flipp app settings
 app.config.from_object('config.TestingConfig')
-
 
 mock_quota = {
     'metadata': {
@@ -239,6 +239,28 @@ class DatabaseTest(TestCase):
         db.session.add(new_quota)
         new_quota = Quota(guid='guid2', name='test_name_2', url='test_url_2')
         db.session.add(new_quota)
+        db.session.commit()
+        quotas = Quota.list_all()
+        self.assertEqual(len(quotas), 2)
+        self.assertEqual(quotas[0]['guid'], 'guid')
+        self.assertEqual(quotas[1]['guid'], 'guid2')
+
+
+class DatabaseForeignKeyTest(TestCase):
+    """ Test Database """
+
+    SQLALCHEMY_DATABASE_URI = "sqlite://"
+    TESTING = True
+
+    def create_app(self):
+        app.config['TESTING'] = True
+        app.config['LIVESERVER_PORT'] = 8943
+        return app
+
+    def setUp(self):
+        db.create_all()
+        self.quota = Quota(guid='guid', name='test_name', url='test_url')
+        db.session.add(self.quota)
         db.session.commit()
         quotas = Quota.list_all()
         self.assertEqual(len(quotas), 2)
