@@ -12,16 +12,21 @@ class Service(db.Model):
     quota = db.Column(db.String, db.ForeignKey('quota.guid'))
     guid = db.Column(db.String())
     date_collected = db.Column(db.Date())
-    name = db.Column(db.String())
+    instance_name = db.Column(db.String())
+    label = db.Column(db.String())
+    provider = db.Column(db.String())
 
     # Limiting the data by date
     __table_args__ = (db.PrimaryKeyConstraint(
         'quota', 'guid', 'date_collected', name='quota_serviceguid_date'),)
 
-    def __init__(self, quota, guid, name, date_collected=None):
+    def __init__(self, quota, guid, instance_name,
+                 label=None, provider=None, date_collected=None):
         self.quota = quota
         self.guid = guid
-        self.name = name
+        self.instance_name = instance_name
+        self.label = label
+        self.provider = provider
         if date_collected:
             self.date_collected = date_collected
         else:
@@ -36,17 +41,19 @@ class Service(db.Model):
             'quota_guid': self.quota,
             'date_collected': str(self.date_collected),
             'guid': self.guid,
-            'name': self.name,
+            'instance_name': self.instance_name,
+            'label': self.label,
+            'provider': self.provider,
         }
 
     @classmethod
     def aggregate(cls, quota_guid, start_date=None, end_date=None):
         """ Counts the number of days a Service has been active """
         q = db.session.query(
-            cls.name, cls.guid, func.count(cls.date_collected))
+            cls.label, cls.guid, func.count(cls.date_collected))
         if start_date and end_date:
             q = q.filter(cls.date_collected.between(start_date, end_date))
-        q = q.filter_by(quota=quota_guid).group_by(cls.guid, cls.name)
+        q = q.filter_by(quota=quota_guid).group_by(cls.guid, cls.label)
         return q.all()
 
 
