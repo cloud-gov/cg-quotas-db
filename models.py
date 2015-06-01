@@ -133,6 +133,11 @@ class Quota(db.Model):
         data = data.order_by(model.date_collected).all()
         return [item.details() for item in data]
 
+    def get_mem_cost(self, data):
+        """ Calculate the cost of services currently contains a
+        hard-coded cost for the short-term """
+        return data[0][0] * 0.0033 * data[0][1]
+
     def details(self):
         """ Displays Quota in dict format """
         return {
@@ -172,7 +177,8 @@ class Quota(db.Model):
             'created_at': str(self.created_at),
             'updated_at': str(self.updated_at),
             'data': data,
-            'services': services
+            'services': services,
+            'cost': self.get_mem_cost(data)
         }
 
     # Resources

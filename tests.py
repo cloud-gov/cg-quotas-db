@@ -74,6 +74,7 @@ mock_space_summary = {
         }},
     ]
 }
+
 mock_token_data = {'access_token': '999', 'expires_in': 0}
 
 
@@ -245,6 +246,20 @@ class DatabaseTest(TestCase):
         one_quota = Quota.list_one_details(guid='test_guid')
         self.assertEqual(one_quota['guid'], 'test_guid')
         self.assertEqual(one_quota['name'], 'test_name')
+
+    def test_list_one_aggregate(self):
+        """ Check that the aggregator functionp produces all data include
+        cost """
+        quota = Quota(guid='test', name='test_name', url='test_url')
+        db.session.add(quota)
+        db.session.commit()
+        quota_data = QuotaData(quota, datetime.date(2014, 1, 1))
+        quota_data.memory_limit = 1000
+        quota.data.append(quota_data)
+        db.session.commit()
+        one_quota = Quota.list_one_aggregate(guid='test')
+        self.assertEqual(one_quota['guid'], 'test')
+        self.assertEqual(one_quota['cost'], 3.3)
 
     def test_list_all(self):
         """ Check that list all function returns dict of multiple quotas """
@@ -547,7 +562,9 @@ class QuotaAppTest(TestCase):
         db.session.add(quota_2)
         quota_data = QuotaData(quota_1)
         quota_data.date_collected = datetime.date(2014, 1, 1)
+        quota_data.memory_limit = 1000
         quota_data_2 = QuotaData(quota_1)
+        quota_data_2.memory_limit = 1000
         quota_1.data.append(quota_data)
         quota_1.data.append(quota_data_2)
         service_1 = Service(quota=quota_1, guid='sid', instance_name='test')

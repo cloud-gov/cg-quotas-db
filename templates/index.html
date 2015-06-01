@@ -25,6 +25,9 @@
     <div id="results">
       {% raw %}
           <h3>{{quota_data.name}}</h3>
+          <div ng-if="quota_data.cost">
+	    Cost: {{quota_data.cost | currency:"$"}}
+	  </div>
 
           <div ng-if="quota_data.created_at">
             Created on: {{quota_data.created_at}}
