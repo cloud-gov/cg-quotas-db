@@ -1,3 +1,4 @@
+import os
 from datetime import date
 from quotas import db
 from sqlalchemy import func
@@ -136,7 +137,7 @@ class Quota(db.Model):
     def get_mem_cost(self, data):
         """ Calculate the cost of services currently contains a
         hard-coded cost for the short-term """
-        return data[0][0] * 0.0033 * data[0][1]
+        return data[0][0] * os.getenv('MB_COST_PER_DAY', 0.0033) * data[0][1]
 
     def details(self):
         """ Displays Quota in dict format """
