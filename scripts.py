@@ -61,15 +61,19 @@ def load_services(space_summary, quota):
     """ Load services into database """
     services = space_summary.get('services')
     for service in services:
-        service_instance, created = get_or_create(
-            model=Service,
-            quota=quota.guid,
-            guid=service['guid'],
-            name=service['name'],
-            date_collected=datetime.date.today())
-        quota.services.append(service_instance)
-        db.session.merge(quota)
-        db.session.commit()
+        if 'service_plan' in service:
+            service_instance, created = get_or_create(
+                model=Service,
+                quota=quota.guid,
+                guid=service['service_plan']['service']['guid'],
+                instance_name=service['service_plan']['name'],
+                label=service['service_plan']['service']['label'],
+                provider=service['service_plan']['service']['provider'],
+                date_collected=datetime.date.today())
+            service_instance.user_defined = True
+            quota.services.append(service_instance)
+            db.session.merge(quota)
+            db.session.commit()
 
 
 def process_spaces(cf_api, spaces_url, quota):

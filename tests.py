@@ -12,7 +12,6 @@ from cloudfoundry import CloudFoundry
 from quotas import app, db
 from models import Quota, QuotaData, Service
 import scripts
-import vcr
 
 # Flipp app settings
 app.config.from_object('config.TestingConfig')
@@ -57,8 +56,22 @@ mock_org_data = {
 }
 mock_space_summary = {
     'services': [
-        {'guid': 'guid_1', 'name': 'hub-es15-highmem'},
-        {'guid': 'guid_2', 'name': 'es'}
+        {'service_plan': {
+            'name': 'instance_1',
+            'service': {
+                'guid': 'guid_1',
+                'label': 'plan_label_1',
+                'provider': 'core'
+            },
+        }},
+        {'service_plan': {
+            'name': 'instance_1',
+            'service': {
+                'guid': 'guid_2',
+                'label': 'plan_label_2',
+                'provider': 'core'
+            },
+        }},
     ]
 }
 mock_token_data = {'access_token': '999', 'expires_in': 0}
@@ -262,28 +275,6 @@ class DatabaseForeignKeyTest(TestCase):
         self.quota = Quota(guid='guid', name='test_name', url='test_url')
         db.session.add(self.quota)
         db.session.commit()
-        quotas = Quota.list_all()
-        self.assertEqual(len(quotas), 2)
-        self.assertEqual(quotas[0]['guid'], 'guid')
-        self.assertEqual(quotas[1]['guid'], 'guid2')
-
-
-class DatabaseForeignKeyTest(TestCase):
-    """ Test Database """
-
-    SQLALCHEMY_DATABASE_URI = "sqlite://"
-    TESTING = True
-
-    def create_app(self):
-        app.config['TESTING'] = True
-        app.config['LIVESERVER_PORT'] = 8943
-        return app
-
-    def setUp(self):
-        db.create_all()
-        self.quota = Quota(guid='guid', name='test_name', url='test_url')
-        db.session.add(self.quota)
-        db.session.commit()
 
     def tearDown(self):
         db.session.remove()
@@ -405,7 +396,8 @@ class DatabaseForeignKeyTest(TestCase):
         """ Check that service data can be added """
         # Adding Service data
         service_data = Service(
-            quota=self.quota, guid='sid', name='test',
+            quota=self.quota, guid='sid', instance_name='test',
+            label='test_lable', provider='test_provier',
             date_collected=datetime.date(2014, 1, 1))
         self.quota.services.append(service_data)
         db.session.commit()
@@ -414,13 +406,15 @@ class DatabaseForeignKeyTest(TestCase):
         self.assertEqual(quota.name, 'test_name')
         self.assertEqual(len(quota.services), 1)
         self.assertEqual(quota.services[0].guid, 'sid')
+        self.assertEqual(quota.services[0].instance_name, 'test')
+        self.assertEqual(quota.services[0].provider, 'test_provier')
         self.assertEqual(quota.services[0].date_collected.year, 2014)
 
     def test_primary_key_constraints_for_service_data(self):
         """ Check that the PrimaryKeyConstraints work for Service """
         failed = False
-        service_1 = Service(quota=self.quota, guid='sid', name='test')
-        service_2 = Service(quota=self.quota, guid='sid', name='test')
+        service_1 = Service(quota=self.quota, guid='sid', instance_name='test')
+        service_2 = Service(quota=self.quota, guid='sid', instance_name='test')
         self.quota.services.append(service_1)
         self.quota.services.append(service_2)
         try:
@@ -433,9 +427,11 @@ class DatabaseForeignKeyTest(TestCase):
         """ Check that the relationship between Quota and Service is
         one to many """
         # Creating Quota and 2 instances Service with diff. dates
-        service_1 = Service(quota=self.quota, guid='sid', name='test')
+        service_1 = Service(
+            quota=self.quota, guid='sid', instance_name='test')
         service_1.date_collected = datetime.date(2015, 1, 1)
-        service_2 = Service(quota=self.quota, guid='sid_2', name='test_2')
+        service_2 = Service(
+            quota=self.quota, guid='sid_2', instance_name='test_2')
         self.quota.services.append(service_1)
         self.quota.services.append(service_2)
         db.session.commit()
@@ -447,9 +443,10 @@ class DatabaseForeignKeyTest(TestCase):
         """ Check that list one returns a list of data details within the
         designated time period """
         # Create new quota with two services
-        service_1 = Service(quota=self.quota, guid='sid', name='test')
+        service_1 = Service(quota=self.quota, guid='sid', instance_name='test')
         service_1.date_collected = datetime.date(2014, 1, 1)
-        service_2 = Service(quota=self.quota, guid='sid_2', name='test_2')
+        service_2 = Service(
+            quota=self.quota, guid='sid_2', instance_name='test_2')
         self.quota.services.append(service_1)
         self.quota.services.append(service_2)
         db.session.commit()
@@ -470,12 +467,12 @@ class DatabaseForeignKeyTest(TestCase):
         """ Check that details function returns dict for a specific
         service object """
         # Create new quota with quotadata
-        service_1 = Service(quota=self.quota, guid='sid', name='test')
+        service_1 = Service(quota=self.quota, guid='sid', instance_name='test')
         self.quota.services.append(service_1)
         db.session.commit()
         # Check details
         quota = Quota.query.filter_by(guid='guid').first()
-        self.assertTrue('name' in quota.services[0].details().keys())
+        self.assertTrue('instance_name' in quota.services[0].details().keys())
 
     def test_foreign_key_preparer(self):
         """ Verify that function prepares a details list for a givin
@@ -500,11 +497,14 @@ class DatabaseForeignKeyTest(TestCase):
         Service has been active
         """
         # Add multiple quotas
-        service_1 = Service(quota=self.quota, guid='pgres', name='postgres')
+        service_1 = Service(
+            quota=self.quota, guid='pgres', instance_name='postgres')
         service_1.date_collected = datetime.date(2013, 1, 15)
-        service_2 = Service(quota=self.quota, guid='pgres', name='postgres')
+        service_2 = Service(
+            quota=self.quota, guid='pgres', instance_name='postgres')
         service_2.date_collected = datetime.date(2014, 1, 31)
-        service_3 = Service(quota=self.quota, guid='elastic', name='es')
+        service_3 = Service(
+            quota=self.quota, guid='elastic', instance_name='es')
         service_3.date_collected = datetime.date(2013, 1, 15)
         self.quota.services.append(service_1)
         self.quota.services.append(service_2)
@@ -550,9 +550,10 @@ class QuotaAppTest(TestCase):
         quota_data_2 = QuotaData(quota_1)
         quota_1.data.append(quota_data)
         quota_1.data.append(quota_data_2)
-        service_1 = Service(quota=quota_1, guid='sid', name='test')
+        service_1 = Service(quota=quota_1, guid='sid', instance_name='test')
         service_1.date_collected = datetime.date(2014, 1, 1)
-        service_2 = Service(quota=quota_1, guid='sid_2', name='test_2')
+        service_2 = Service(
+            quota=quota_1, guid='sid_2', instance_name='test_2')
         quota_1.services.append(service_1)
         quota_1.services.append(service_2)
         db.session.commit()
@@ -674,7 +675,7 @@ class LoadingTest(TestCase):
         scripts.load_services(space_summary=mock_space_summary, quota=quota)
         self.assertEqual(len(quota.services), 2)
         self.assertEqual(quota.services[0].guid, 'guid_1')
-        self.assertEqual(quota.services[0].name, 'hub-es15-highmem')
+        self.assertEqual(quota.services[0].instance_name, 'instance_1')
 
 if __name__ == "__main__":
     unittest.main()
