@@ -17,7 +17,6 @@ import vcr
 # Flipp app settings
 app.config.from_object('config.TestingConfig')
 
-
 mock_quota = {
     'metadata': {
         'created_at': '2015-01-01T01:01:01Z',
@@ -240,6 +239,28 @@ class DatabaseTest(TestCase):
         db.session.add(new_quota)
         new_quota = Quota(guid='guid2', name='test_name_2', url='test_url_2')
         db.session.add(new_quota)
+        db.session.commit()
+        quotas = Quota.list_all()
+        self.assertEqual(len(quotas), 2)
+        self.assertEqual(quotas[0]['guid'], 'guid')
+        self.assertEqual(quotas[1]['guid'], 'guid2')
+
+
+class DatabaseForeignKeyTest(TestCase):
+    """ Test Database """
+
+    SQLALCHEMY_DATABASE_URI = "sqlite://"
+    TESTING = True
+
+    def create_app(self):
+        app.config['TESTING'] = True
+        app.config['LIVESERVER_PORT'] = 8943
+        return app
+
+    def setUp(self):
+        db.create_all()
+        self.quota = Quota(guid='guid', name='test_name', url='test_url')
+        db.session.add(self.quota)
         db.session.commit()
         quotas = Quota.list_all()
         self.assertEqual(len(quotas), 2)
@@ -654,51 +675,6 @@ class LoadingTest(TestCase):
         self.assertEqual(len(quota.services), 2)
         self.assertEqual(quota.services[0].guid, 'guid_1')
         self.assertEqual(quota.services[0].name, 'hub-es15-highmem')
-
-    @mock_token
-    @vcr.use_cassette('fixtures/load_quotas.yaml')
-    def test_process_spaces(self):
-        cf_api = CloudFoundry(
-            url='18f.gov',
-            username='mockusername@mock.com',
-            password='*****')
-        quota = Quota(guid='test_guid', name='test_name', url='test_url')
-        db.session.add(quota)
-        db.session.commit()
-        url = '/v2/organizations/f190f9a3-d89f-4684-8ac4-6f76e32c3e05/spaces'
-        scripts.process_spaces(cf_api=cf_api, spaces_url=url, quota=quota)
-        quotas = Quota.query.all()
-        self.assertEqual(len(quotas), 1)
-        self.assertEqual(len(quotas[0].services), 6)
-
-    @mock_token
-    @vcr.use_cassette('fixtures/load_quotas.yaml')
-    def test_process_org(self):
-        """ Test that process_org function loads quota from org """
-        cf_api = CloudFoundry(
-            url='18f.gov',
-            username='mockusername@mock.com',
-            password='*****')
-        scripts.process_org(cf_api=cf_api, org=mock_org_data['resources'][0])
-        quotas = Quota.query.all()
-        self.assertEqual(len(quotas), 1)
-        self.assertEqual(len(quotas[0].services), 6)
-
-    @mock_token
-    @vcr.use_cassette('fixtures/load_quotas.yaml')
-    def test_load_quotas(self):
-        """ Test that function loads multiple quotas """
-        cf_api = CloudFoundry(
-            url='18f.gov',
-            username='mockusername@mock.com',
-            password='*****')
-        scripts.load_quotas(cf_api)
-        quotas = Quota.query.all()
-        self.assertEqual(len(quotas), 2)
-        self.assertEqual(len(quotas[1].data), 1)
-        self.assertEqual(
-            len(quotas[0].services) + len(quotas[1].services), 6)
-
 
 if __name__ == "__main__":
     unittest.main()

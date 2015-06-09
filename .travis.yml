@@ -1,0 +1,7 @@
+language: python
+python:
+  - "3.4"
+install: pip install -r requirements-dev.txt
+script:
+  - export APP_SETTINGS="config.TestingConfig"
+  - nosetests
