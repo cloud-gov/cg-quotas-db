@@ -32,23 +32,17 @@ def api_index():
     return render_template('documentation.html')
 
 
-@app.route("/api/quotas/", methods=['GET'])
-def api_all():
-    """ Endpoint that list all the quotas """
-    return jsonify({'Quotas': Quota.list_all()})
-
-
-@app.route("/api/quotas/<guid>/", methods=['GET'])
+@app.route("/api/quota/<guid>/", methods=['GET'])
 def api_one(guid):
     """ Endpoint for listing quota details with no date limits """
     data = Quota.list_one_aggregate(guid=guid)
     if data:
         return jsonify(data)
     else:
-        return {'error': 'No Data'}, 404
+        return jsonify({'error': 'No Data'}), 404
 
 
-@app.route("/api/quotas/<guid>/<start_date>/<end_date>/", methods=['GET'])
+@app.route("/api/quota/<guid>/<start_date>/<end_date>/", methods=['GET'])
 def api_one_dates(guid, start_date, end_date):
     """ Endpoint that lists one quota details limited by date """
     data = Quota.list_one_aggregate(
@@ -56,7 +50,22 @@ def api_one_dates(guid, start_date, end_date):
     if data:
         return jsonify(data)
     else:
-        return {'error': 'No Data'}, 404
+        return jsonify({'error': 'No Data'}), 404
+
+
+@app.route("/api/quotas/", methods=['GET'])
+def api_all():
+    """ Endpoint that lists all the quotas """
+    return jsonify({'Quotas': Quota.list_all()})
+
+
+@app.route("/api/quotas/<start_date>/<end_date>/", methods=['GET'])
+def api_all_dates(start_date, end_date):
+    """ Endpoint that lists all quotas with details between
+    two specific dates """
+    return jsonify(
+        {'Quotas': Quota.list_all(start_date=start_date, end_date=end_date)}
+    )
 
 
 if __name__ == "__main__":

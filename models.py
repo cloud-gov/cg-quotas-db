@@ -137,7 +137,10 @@ class Quota(db.Model):
     def get_mem_cost(self, data):
         """ Calculate the cost of services currently contains a
         hard-coded cost for the short-term """
-        return data[0][0] * os.getenv('MB_COST_PER_DAY', 0.0033) * data[0][1]
+        if data:
+            return data[0][0] * os.getenv('MB_COST_PER_DAY', 0.0033) * \
+                data[0][1]
+        return []
 
     def details(self):
         """ Displays Quota in dict format """
@@ -201,8 +204,11 @@ class Quota(db.Model):
                 start_date=start_date, end_date=end_date)
 
     @classmethod
-    def list_all(cls):
+    def list_all(cls, start_date=None, end_date=None):
         """ Lists all of the Quota data (This endpoint will be
             refactored later) """
         quotas = cls.query.order_by(cls.guid).all()
-        return [quota.details() for quota in quotas]
+        return [
+            quota.data_aggregates(start_date=start_date, end_date=end_date)
+            for quota in quotas
+        ]
