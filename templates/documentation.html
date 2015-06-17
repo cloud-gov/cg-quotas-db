@@ -4,10 +4,16 @@
         <title>API Documentation</title>
     </head>
     <body>
-        <h1>Endpoints</h1>
+        <h2>Endpoints</h2>
+        <h4>Individual Quotas</h4>
         <ul>
-            <li>/api/guid/</li>
-            <li>/api/guid/start-date/end-date -- date-format (yyyy-mm-dd)</li>
+            <li>/api/quota/*guid*/</li>
+            <li>/api/quota/*guid*/*start-date*/*end-date* -- date-format (yyyy-mm-dd)</li>
+        </ul>
+        <h4>All Quotas</h4>
+        <ul>
+            <li>/api/quotas/</li>
+            <li>/api/quotas/*start-date*/*end-date* -- date-format (yyyy-mm-dd)</li>
         </ul>
     </body>
 </html>
