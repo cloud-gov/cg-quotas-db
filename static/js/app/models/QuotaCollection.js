@@ -2,13 +2,23 @@ var Backbone = require('backbone');
 var $ = require('jquery');
 var _ = require('underscore');
 
-var Quota = require('./QuotaModel');
+var QuotaModel = require('./QuotaModel');
 
 var QuotaCollection = Backbone.Collection.extend({
   url: '/api/quotas',
-  model: Quota,
+  model: QuotaModel,
   initialize: function initialize () {
-    return this.fetch();
+    this.fetch();
+  },
+  search: function search (id) {
+    var model = this.get(id);
+    if (model) {
+      return $.Deferred().resolveWith(this, model);
+    }
+    else {
+      model = new QuotaModel({ guid: id });
+      return model.fetch();
+    }
   },
   parse: function parse (response) {
     return response.Quotas;
