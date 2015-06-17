@@ -1,9 +1,10 @@
 var Backbone = require('backbone');
 var $ = require('jquery');
 
-var QuotaCollection = require('./models/QuotaCollection');
 var ListView = require('./views/ListView');
 var DetailView = require('./views/DetailView');
+
+var QuotaModel = require('./models/QuotaModel');
 
 var mainView = $('main').append('div').addClass('app');
 
@@ -12,36 +13,30 @@ var Router = Backbone.Router.extend({
     '': 'listQuotas',
     'quota/:guid': 'showQuota'
   },
-  initialize: function initialize () {
-    console.log('up!');
-    this.lastView = {};
-    this.quotas = new QuotaCollection();
+  initialize: function initialize (opts) {
+    this.quotas = opts.collection;
   },
   listQuotas: function listQuotas () {
-    this.listView = new ListView({ collection: this.quotas });
-    mainView.html(this.listView.$el);
+    listView = app.viewCache['listView'] || new ListView({ collection: this.quotas });
+    app.viewCache['listView'] = listView;
+    mainView.html(listView.$el);
   },
   showQuota: function showQuota (guid) {
-    console.log('what!', guid);
-
-    function renderDetailView (collection) {
-      console.log('collection', collection);
-      var quota = collection.findWhere({ guid: guid });
-      detailView = new DetailView({ model: quota });
+    var quotas = this.quotas;
+    var model = quotas.get(guid);
+    if (model) {
+      var detailView = new DetailView({model: model});
       mainView.html(detailView.$el);
-
-      return this
-    }
-
-    if (this.quotas.length < 1) {
-      this.quotas.fetch().then(function(newObjects) {
-        console.log('this.quotas', this.quotas);
-        renderDetailView(this.quotas);
-      });
     }
     else {
-      console.log('y');
-      renderDetailView(this.quotas);
+      var newModel = new QuotaModel({ guid: guid });
+      newModel.fetch({
+        success: function () {
+          console.log('new model', newModel);
+          var detailView = new DetailView({model: newModel});
+          mainView.html(detailView.$el);
+        }
+      })
     }
   }
 });
