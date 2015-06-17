@@ -23,7 +23,7 @@ from models import Quota
 @app.route("/", methods=['GET'])
 def all():
     """ Initalize site with a list of Quotas """
-    return render_template('index.html', quotas=Quota.list_all())
+    return jsonify(quotas=Quota.list_all())
 
 
 @app.route("/api/", methods=['GET'])
