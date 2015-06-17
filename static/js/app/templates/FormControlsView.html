@@ -1,0 +1,6 @@
+<label for="quota-selection">Quota</label>
+<select id="quota-selection" name="quota-selection">
+  <% _.each(collection, function(quota) { %>
+    <option value="<%- quota.guid %>"><%- quota.name %></option>
+  <% }); %>
+</select>
