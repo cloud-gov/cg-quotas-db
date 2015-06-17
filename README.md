@@ -1,16 +1,19 @@
 # Quota Database App
-Lightweight Flask app for storing Cloud Foundry quotas data
+There are two distinct components that form the basis of this repository. At some point in the future we might split them out, for now they are going to stay together.
 
-## Setup
-This project was desgined to work with Python 3
+0. Flask API for storing Cloud Foundry quotas data
+0. Backbone app for front end views
+
+## Setup the Flask API
+This project was designed to work with Python 3
 
 ### Install Requirements
-```bash
+```
 pip install -r requirements.txt
 ```
 
 ### Dev Env Setup
-```bash
+```
 export APP_SETTINGS="config.DevelopmentConfig"
 export DATABASE_URL="sqlite:///dev.db"
 export CF_URL="<<Cloud Foundry URL>>"
@@ -20,7 +23,7 @@ export SECRET_KEY="<<Secret Key>>"
 ```
 
 ### Database setup
-```bash
+```
 # Initalize Database
 python manage.py db init
 # Migrate Database
@@ -33,26 +36,38 @@ python manage.py update_database
 
 ### Testing
 Install the dev requirements
-```bash
+```
 pip install -r requirements-dev.txt
 ```
+
 Run the tests
 ```
 python manage.py tests
 ```
 
 ### Start app for dev
-```bash
+```
 export APP_SETTINGS="config.DevelopmentConfig"
 python manage.py runserver
 ```
 
 ### Crontab
-```bash
+```
 0 6,12,18 * * * cd ~/Documents/DevOps/Quotas && source .env && workon quotas && python manage.py update_database
 ```
 
 ### Cloud Foundry
-```bash
+```
 cf push -c "bash cf_commands.sh"
 ```
+
+## Setup the Backbone app
+This is a browserify built app and uses Backbone as its basic framework. It lives within the `static` directory at the project root.
+
+### Install Requirements
+This is Javascript land, so you can just run `npm install` from within the `static` directory.
+
+### Start app for dev
+You should be able to start the build process with `npm start`. If you want to build once and not re-trigger builds on file changes then you can use `npm run build`. This can be useful for deployment.
+
+Once you've got both the python app running and you've set up `npm start` to rebuild on file changes, you can just go to [http://127.0.0.1:5000/static/dist/index.html](http://127.0.0.1:5000/static/dist/index.html)
