@@ -4,8 +4,9 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "start": "npm run watch:sass & npm run watch:browserify",
-    "build": "npm run sass && npm run browserify",
+    "start": "npm run html && npm run watch:sass & npm run watch:browserify",
+    "build": "npm run html && npm run sass && npm run browserify",
+    "html": "mkdir -p dist && cp index.html dist/index.html",
     "sass": "node-sass css/scss/main.scss dist/style.css",
     "watch:sass": "node-sass -w css/scss/main.scss dist/style.css",
     "browserify": "browserify -d -t brfs js/app.js -o dist/bundle.js",
