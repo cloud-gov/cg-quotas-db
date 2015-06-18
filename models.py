@@ -1,3 +1,4 @@
+import os
 from datetime import date
 from quotas import db
 from sqlalchemy import func
@@ -133,6 +134,14 @@ class Quota(db.Model):
         data = data.order_by(model.date_collected).all()
         return [item.details() for item in data]
 
+    def get_mem_cost(self, data):
+        """ Calculate the cost of services currently contains a
+        hard-coded cost for the short-term """
+        if data:
+            return data[0][0] * os.getenv('MB_COST_PER_DAY', 0.0033) * \
+                data[0][1]
+        return []
+
     def details(self):
         """ Displays Quota in dict format """
         return {
@@ -172,7 +181,8 @@ class Quota(db.Model):
             'created_at': str(self.created_at),
             'updated_at': str(self.updated_at),
             'data': data,
-            'services': services
+            'services': services,
+            'cost': self.get_mem_cost(data)
         }
 
     # Resources
@@ -194,8 +204,11 @@ class Quota(db.Model):
                 start_date=start_date, end_date=end_date)
 
     @classmethod
-    def list_all(cls):
+    def list_all(cls, start_date=None, end_date=None):
         """ Lists all of the Quota data (This endpoint will be
             refactored later) """
         quotas = cls.query.order_by(cls.guid).all()
-        return [quota.details() for quota in quotas]
+        return [
+            quota.data_aggregates(start_date=start_date, end_date=end_date)
+            for quota in quotas
+        ]

@@ -74,6 +74,7 @@ mock_space_summary = {
         }},
     ]
 }
+
 mock_token_data = {'access_token': '999', 'expires_in': 0}
 
 
@@ -245,6 +246,20 @@ class DatabaseTest(TestCase):
         one_quota = Quota.list_one_details(guid='test_guid')
         self.assertEqual(one_quota['guid'], 'test_guid')
         self.assertEqual(one_quota['name'], 'test_name')
+
+    def test_list_one_aggregate(self):
+        """ Check that the aggregator functionp produces all data include
+        cost """
+        quota = Quota(guid='test', name='test_name', url='test_url')
+        db.session.add(quota)
+        db.session.commit()
+        quota_data = QuotaData(quota, datetime.date(2014, 1, 1))
+        quota_data.memory_limit = 1000
+        quota.data.append(quota_data)
+        db.session.commit()
+        one_quota = Quota.list_one_aggregate(guid='test')
+        self.assertEqual(one_quota['guid'], 'test')
+        self.assertEqual(one_quota['cost'], 3.3)
 
     def test_list_all(self):
         """ Check that list all function returns dict of multiple quotas """
@@ -547,7 +562,9 @@ class QuotaAppTest(TestCase):
         db.session.add(quota_2)
         quota_data = QuotaData(quota_1)
         quota_data.date_collected = datetime.date(2014, 1, 1)
+        quota_data.memory_limit = 1000
         quota_data_2 = QuotaData(quota_1)
+        quota_data_2.memory_limit = 1000
         quota_1.data.append(quota_data)
         quota_1.data.append(quota_data_2)
         service_1 = Service(quota=quota_1, guid='sid', instance_name='test')
@@ -572,6 +589,7 @@ class QuotaAppTest(TestCase):
         """ Test the main api page """
         response = self.client.get("/api/")
         self.assertEqual(response.status_code, 200)
+        self.assertTrue('Endpoints' in response.data.decode('utf-8'))
 
     def test_api_quotas_page(self):
         """ Test the quota list page """
@@ -590,14 +608,73 @@ class QuotaAppTest(TestCase):
         # Check if service data was rendered
         self.assertEqual(len(response.json['services']), 2)
 
+    def test_api_quota_detail_page_no_data(self):
+        """ Test the quota details page when there is no data """
+        response = self.client.get("/api/quota/wrongguid/")
+        self.assertEqual(response.status_code, 404)
+
     def test_api_quota_detail_dates(self):
         """ Test the quota details date range page functions """
-        response = self.client.get("/api/quotas/guid/2013-12-31/2014-1-1/")
+        response = self.client.get(
+            "/api/quotas/guid/?since=2013-12-31&until=2014-1-1")
         self.assertEqual(response.status_code, 200)
         # Check if quota data was rendered within date range
         self.assertEqual(len(response.json['data']), 1)
         # Check if service data was rendered
         self.assertEqual(len(response.json['services']), 1)
+
+    def test_api_quota_detail_page_one_date(self):
+        """ Test the quota details page with only the since parameter """
+        response = self.client.get("/api/quotas/guid/?since=2013-12-31")
+        self.assertEqual(response.status_code, 200)
+        # Check if quota was rendered
+        self.assertTrue('guid' in response.json.keys())
+        # Check if quota data was rendered
+        self.assertEqual(len(response.json['data']), 1)
+        # Check if service data was rendered
+        self.assertEqual(len(response.json['services']), 2)
+
+    def test_api_quota_detail_dates_no_data(self):
+        """ Test the quota details page when there are date but no data """
+        response = self.client.get("/api/quota/wrongguid/2013-12-31/2014-1-1/")
+        self.assertEqual(response.status_code, 404)
+
+    def test_api_quotas_list_page(self):
+        """ Test the quotas list page """
+        response = self.client.get("/api/quotas/")
+        self.assertEqual(response.status_code, 200)
+        data = response.json['Quotas']
+        # Check if all quotas present
+        self.assertEqual(len(data), 2)
+        # Check if quota data contains data details
+        self.assertEqual(len(data[0]['data']), 1)
+        # Check if quota data contains service details
+        self.assertEqual(len(data[0]['services']), 2)
+
+    def test_api_quotas_list_dates(self):
+        """ Test the quotas list page with dates """
+        response = self.client.get(
+            "/api/quotas/?since=2012-12-31&until=2013-1-1")
+        self.assertEqual(response.status_code, 200)
+        data = response.json['Quotas']
+        # Check if all quotas present
+        self.assertEqual(len(data), 2)
+        # Check if quota data contains memory data only when inbetween dates
+        self.assertEqual(len(data[0]['data']), 0)
+        # Check if quota data contains service data only when inbetween dates
+        self.assertEqual(len(data[0]['services']), 0)
+
+    def test_api_quotas_list_page_one_date(self):
+        """ Test the quotas list page when only since date is given """
+        response = self.client.get("/api/quotas/?since=2012-12-31")
+        self.assertEqual(response.status_code, 200)
+        data = response.json['Quotas']
+        # Check if all quotas present
+        self.assertEqual(len(data), 2)
+        # Check if quota data contains data details
+        self.assertEqual(len(data[0]['data']), 1)
+        # Check if quota data contains service details
+        self.assertEqual(len(data[0]['services']), 2)
 
 
 class LoadingTest(TestCase):
