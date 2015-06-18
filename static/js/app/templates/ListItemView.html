@@ -1,4 +1,15 @@
 <td><%- name %></td>
-<td><a href="#/quota/<%- guid %>"><%- guid %></a></td>
+<td><%- guid %></td>
+<td>$<%- cost %></td>
 <td><%- data %></td>
-<td><%- services %></td>
+<td>
+  <% if (services.length == 0) { %>
+    No services
+  <% } else { %>
+    <ul>
+    <% services.each(function(service) { %>
+      <li><%- service %></li>
+    <% }); %>
+    </ul>
+  <% } %>
+</td>
