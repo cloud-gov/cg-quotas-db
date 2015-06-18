@@ -615,12 +615,24 @@ class QuotaAppTest(TestCase):
 
     def test_api_quota_detail_dates(self):
         """ Test the quota details date range page functions """
-        response = self.client.get("/api/quotas/guid/2013-12-31/2014-1-1/")
+        response = self.client.get(
+            "/api/quotas/guid/?since=2013-12-31&until=2014-1-1")
         self.assertEqual(response.status_code, 200)
         # Check if quota data was rendered within date range
         self.assertEqual(len(response.json['data']), 1)
         # Check if service data was rendered
         self.assertEqual(len(response.json['services']), 1)
+
+    def test_api_quota_detail_page_one_date(self):
+        """ Test the quota details page with only the since parameter """
+        response = self.client.get("/api/quotas/guid/?since=2013-12-31")
+        self.assertEqual(response.status_code, 200)
+        # Check if quota was rendered
+        self.assertTrue('guid' in response.json.keys())
+        # Check if quota data was rendered
+        self.assertEqual(len(response.json['data']), 1)
+        # Check if service data was rendered
+        self.assertEqual(len(response.json['services']), 2)
 
     def test_api_quota_detail_dates_no_data(self):
         """ Test the quota details page when there are date but no data """
@@ -641,7 +653,8 @@ class QuotaAppTest(TestCase):
 
     def test_api_quotas_list_dates(self):
         """ Test the quotas list page with dates """
-        response = self.client.get("/api/quotas/2012-12-31/2013-1-1/")
+        response = self.client.get(
+            "/api/quotas/?since=2012-12-31&until=2013-1-1")
         self.assertEqual(response.status_code, 200)
         data = response.json['Quotas']
         # Check if all quotas present
@@ -650,6 +663,18 @@ class QuotaAppTest(TestCase):
         self.assertEqual(len(data[0]['data']), 0)
         # Check if quota data contains service data only when inbetween dates
         self.assertEqual(len(data[0]['services']), 0)
+
+    def test_api_quotas_list_page_one_date(self):
+        """ Test the quotas list page when only since date is given """
+        response = self.client.get("/api/quotas/?since=2012-12-31")
+        self.assertEqual(response.status_code, 200)
+        data = response.json['Quotas']
+        # Check if all quotas present
+        self.assertEqual(len(data), 2)
+        # Check if quota data contains data details
+        self.assertEqual(len(data[0]['data']), 1)
+        # Check if quota data contains service details
+        self.assertEqual(len(data[0]['services']), 2)
 
 
 class LoadingTest(TestCase):
