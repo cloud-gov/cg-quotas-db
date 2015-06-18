@@ -599,7 +599,7 @@ class QuotaAppTest(TestCase):
 
     def test_api_quota_detail_page(self):
         """ Test the quota details page """
-        response = self.client.get("/api/quota/guid/")
+        response = self.client.get("/api/quotas/guid/")
         self.assertEqual(response.status_code, 200)
         # Check if quota was rendered
         self.assertTrue('guid' in response.json.keys())
@@ -615,7 +615,7 @@ class QuotaAppTest(TestCase):
 
     def test_api_quota_detail_dates(self):
         """ Test the quota details date range page functions """
-        response = self.client.get("/api/quota/guid/2013-12-31/2014-1-1/")
+        response = self.client.get("/api/quotas/guid/2013-12-31/2014-1-1/")
         self.assertEqual(response.status_code, 200)
         # Check if quota data was rendered within date range
         self.assertEqual(len(response.json['data']), 1)
