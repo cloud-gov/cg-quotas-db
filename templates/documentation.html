@@ -4,10 +4,19 @@
         <title>API Documentation</title>
     </head>
     <body>
-        <h1>Endpoints</h1>
+        <h2>Endpoints</h2>
+        <h4>Individual Quotas</h4>
+        <h4>Quotas</h4>
         <ul>
-            <li>/api/guid/</li>
-            <li>/api/guid/start-date/end-date -- date-format (yyyy-mm-dd)</li>
+            <li>/api/quotas/</li>
+            <li>/api/quota/*guid*/</li>
+        </ul>
+        <p>This endpoint also have the "since" and "until" date parameters.</p>
+        <p>If the "until" parameter is not present the date will default to today UTC.</p>
+        <p>Examples</p>
+        <ul>
+            <li>ex. /api/quotas/?since=2013</li>
+            <li>ex. /api/quotas/*guid*/?since=2013&amp;until=2014</li>
         </ul>
     </body>
 </html>
