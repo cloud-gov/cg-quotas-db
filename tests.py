@@ -273,6 +273,21 @@ class DatabaseTest(TestCase):
         self.assertEqual(quotas[0]['guid'], 'guid')
         self.assertEqual(quotas[1]['guid'], 'guid2')
 
+    def test_get_mem_cost(self):
+        """ Check that the cost function works with multiple days
+        and default """
+        sample_data = [[1875, 14], [2000, 15]]
+        cost = Quota.get_mem_cost(sample_data)
+        self.assertEqual(cost, 86.625)
+
+    def test_prepare_memory_data(self):
+        """ Check that memory data is prepared into more descriptive format """
+        sample_data = [[1875, 14], [2000, 15]]
+        memory_data = Quota.prepare_memory_data(sample_data)
+        self.assertEqual([
+            {'size': 1875, 'days': 14}, {'size': 1875, 'days': 15}
+        ], memory_data)
+
 
 class DatabaseForeignKeyTest(TestCase):
     """ Test Database """
@@ -354,14 +369,14 @@ class DatabaseForeignKeyTest(TestCase):
         # Check that correct quota data is returned by date strings
         one_quota = Quota.list_one_details(
             guid='guid', start_date='2013-12-31', end_date='2014-1-2')
-        self.assertEqual(len(one_quota['data']), 1)
+        self.assertEqual(len(one_quota['memory']), 1)
 
         # Check that correct quota data is returned by datetime.dates
         one_quota = Quota.list_one_details(
             guid='guid',
             start_date=datetime.date(2013, 12, 31),
             end_date=datetime.date(2014, 1, 2))
-        self.assertEqual(len(one_quota['data']), 1)
+        self.assertEqual(len(one_quota['memory']), 1)
 
     def test_quotadata_details(self):
         """ Check that details function returns dict for a specific
@@ -604,7 +619,7 @@ class QuotaAppTest(TestCase):
         # Check if quota was rendered
         self.assertTrue('guid' in response.json.keys())
         # Check if quota data was rendered
-        self.assertEqual(len(response.json['data']), 1)
+        self.assertEqual(len(response.json['memory']), 1)
         # Check if service data was rendered
         self.assertEqual(len(response.json['services']), 2)
 
@@ -619,7 +634,7 @@ class QuotaAppTest(TestCase):
             "/api/quotas/guid/?since=2013-12-31&until=2014-1-1")
         self.assertEqual(response.status_code, 200)
         # Check if quota data was rendered within date range
-        self.assertEqual(len(response.json['data']), 1)
+        self.assertEqual(len(response.json['memory']), 1)
         # Check if service data was rendered
         self.assertEqual(len(response.json['services']), 1)
 
@@ -630,7 +645,7 @@ class QuotaAppTest(TestCase):
         # Check if quota was rendered
         self.assertTrue('guid' in response.json.keys())
         # Check if quota data was rendered
-        self.assertEqual(len(response.json['data']), 1)
+        self.assertEqual(len(response.json['memory']), 1)
         # Check if service data was rendered
         self.assertEqual(len(response.json['services']), 2)
 
@@ -647,7 +662,7 @@ class QuotaAppTest(TestCase):
         # Check if all quotas present
         self.assertEqual(len(data), 2)
         # Check if quota data contains data details
-        self.assertEqual(len(data[0]['data']), 1)
+        self.assertEqual(len(data[0]['memory']), 1)
         # Check if quota data contains service details
         self.assertEqual(len(data[0]['services']), 2)
 
@@ -660,7 +675,7 @@ class QuotaAppTest(TestCase):
         # Check if all quotas present
         self.assertEqual(len(data), 2)
         # Check if quota data contains memory data only when inbetween dates
-        self.assertEqual(len(data[0]['data']), 0)
+        self.assertEqual(len(data[0]['memory']), 0)
         # Check if quota data contains service data only when inbetween dates
         self.assertEqual(len(data[0]['services']), 0)
 
@@ -672,7 +687,7 @@ class QuotaAppTest(TestCase):
         # Check if all quotas present
         self.assertEqual(len(data), 2)
         # Check if quota data contains data details
-        self.assertEqual(len(data[0]['data']), 1)
+        self.assertEqual(len(data[0]['memory']), 1)
         # Check if quota data contains service details
         self.assertEqual(len(data[0]['services']), 2)
 

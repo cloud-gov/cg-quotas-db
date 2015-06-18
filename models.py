@@ -134,13 +134,20 @@ class Quota(db.Model):
         data = data.order_by(model.date_collected).all()
         return [item.details() for item in data]
 
-    def get_mem_cost(self, data):
+    @staticmethod
+    def get_mem_cost(data):
         """ Calculate the cost of services currently contains a
         hard-coded cost for the short-term """
         if data:
             return data[0][0] * os.getenv('MB_COST_PER_DAY', 0.0033) * \
                 data[0][1]
         return []
+
+    @staticmethod
+    def prepare_memory_data(data):
+        """ Given a memory array converts it to a more expressive dict
+        [[1875, 14]] -> [{'size': 1875, 'days': 14}] """
+        return [{'size': memory[0], 'days': memory[1]} for memory in data]
 
     def details(self):
         """ Displays Quota in dict format """
@@ -154,7 +161,7 @@ class Quota(db.Model):
 
     def data_details(self, start_date=None, end_date=None):
         """ Displays Quota in dict format with data details """
-        data = self.foreign_key_preparer(
+        memory_data = self.foreign_key_preparer(
             model=QuotaData, start_date=start_date, end_date=end_date)
         services = self.foreign_key_preparer(
             model=Service, start_date=start_date, end_date=end_date)
@@ -164,13 +171,13 @@ class Quota(db.Model):
             'url': self.url,
             'created_at': str(self.created_at),
             'updated_at': str(self.updated_at),
-            'data': data,
+            'memory': memory_data,
             'services': services
         }
 
     def data_aggregates(self, start_date=None, end_date=None):
         """ Displays Quota in dict format with data details """
-        data = QuotaData.aggregate(
+        memory_data = QuotaData.aggregate(
             quota_guid=self.guid, start_date=start_date, end_date=end_date)
         services = Service.aggregate(
             quota_guid=self.guid, start_date=start_date, end_date=end_date)
@@ -180,9 +187,9 @@ class Quota(db.Model):
             'url': self.url,
             'created_at': str(self.created_at),
             'updated_at': str(self.updated_at),
-            'data': data,
+            'memory': self.prepare_memory_data(memory_data),
             'services': services,
-            'cost': self.get_mem_cost(data)
+            'cost': self.get_mem_cost(memory_data)
         }
 
     # Resources
