@@ -4,3 +4,5 @@ ideas.txt
 migrations
 __pycache__/
 .coverage
+static/dist/
+static/node_modules/

@@ -1,0 +1,27 @@
+{
+  "name": "cf-quotas-db-frontend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "npm run html && npm run watch:sass & npm run watch:browserify",
+    "build": "npm run html && npm run sass && npm run browserify",
+    "html": "mkdir -p dist && cp index.html dist/index.html",
+    "sass": "node-sass css/scss/main.scss dist/style.css",
+    "watch:sass": "node-sass -w css/scss/main.scss dist/style.css",
+    "browserify": "browserify -d -t brfs js/app.js -o dist/bundle.js",
+    "watch:browserify": "watchify -d -t brfs js/app.js -o dist/bundle.js",
+    "watchify": "npm run watch:browserify",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "backbone": "^1.2.1",
+    "brfs": "^1.4.0",
+    "jquery": "^2.1.4",
+    "node-sass": "^3.2.0",
+    "underscore": "^1.8.3",
+    "watchify": "^3.2.2"
+  }
+}
