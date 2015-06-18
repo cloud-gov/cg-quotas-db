@@ -1,6 +1,21 @@
-<label for="quota-selection">Quota</label>
-<select id="quota-selection" name="quota-selection">
-  <% _.each(collection, function(quota) { %>
-    <option value="<%- quota.guid %>"><%- quota.name %></option>
-  <% }); %>
-</select>
+<div class="form-group">
+  <label for="quota-selection">Quota</label>
+  <select class="form-control" id="quota-selection" name="quota-selection">
+      <option value="">All</option> <!-- default -->
+    <% _.each(collection, function(quota) { %>
+      <option value="<%- quota.guid %>"><%- quota.name %></option>
+    <% }); %>
+  </select>
+</div>
+<div class="form-group">
+  <label for="since-date">Since Date</label>
+  <input type="date" class="form-control" id="since-date" name="since-date">
+</div>
+<div class="form-group">
+  <label for="until-date">Until Date</label>
+  <input type="date" class="form-control" id="until-date" name="until-date">
+</div>
+
+<a class="btn btn-primary" id="filter-action" role="button">Filter</a>
+<a class="btn btn-danger" id="reset-action" role="button">Reset</a>
+<a class="btn btn-default pull-right" id="download-csv-action" role="button">Download CSV</a>
