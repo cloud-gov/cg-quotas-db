@@ -1,13 +1,19 @@
 <td><%- name %></td>
 <td><%- guid %></td>
 <td>$<%- cost %></td>
-<td><%- data %></td>
+<td>
+  <ul>
+    <% memory.forEach(function(usage) { %>
+      <li>Ran for <%- usage.days %> days and used <%- usage.size %> MBs</li>
+    <% }) %>
+  </ul>
+</td>
 <td>
   <% if (services.length == 0) { %>
     No services
   <% } else { %>
     <ul>
-    <% services.each(function(service) { %>
+    <% services.forEach(function(service) { %>
       <li><%- service %></li>
     <% }); %>
     </ul>
