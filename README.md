@@ -51,11 +51,6 @@ export APP_SETTINGS="config.DevelopmentConfig"
 python manage.py runserver
 ```
 
-### Crontab
-```
-0 6,12,18 * * * cd ~/Documents/DevOps/Quotas && source .env && workon quotas && python manage.py update_database
-```
-
 ### Cloud Foundry
 ```
 cf push -c "bash cf_commands.sh"
