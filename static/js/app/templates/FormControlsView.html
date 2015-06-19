@@ -1,3 +1,4 @@
+<% window.f = filter %>
 <div class="form-group">
   <label for="quota-selection">Quota</label>
   <select class="form-control" id="quota-selection" name="quota-selection">
@@ -8,12 +9,16 @@
   </select>
 </div>
 <div class="form-group">
+  <% var sinceDate %>
+  <% (filter['since-date']) ? sinceDate = filter['since-date'] : sinceDate = '' %>
   <label for="since-date">Since Date</label>
-  <input type="date" class="form-control" id="since-date" name="since-date">
+  <input type="date" class="form-control" id="since-date" name="since-date" value="<%= sinceDate %>">
 </div>
 <div class="form-group">
+  <% var untilDate %>
+  <% (filter['until-date']) ? untilDate = filter['until-date'] : untilDate = '' %>
   <label for="until-date">Until Date</label>
-  <input type="date" class="form-control" id="until-date" name="until-date">
+  <input type="date" class="form-control" id="until-date" name="until-date" value="<%= untilDate %>">
 </div>
 
 <a class="btn btn-primary" id="filter-action" role="button">Filter</a>
