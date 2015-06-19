@@ -7,8 +7,10 @@ var QuotaModel = Backbone.Model.extend({
   idAttribute: 'guid',
   defaults: {
     'guid': undefined,
-    'data': [],
     'name': 'default',
+    'created_at': undefined,
+    'updated_at': undefined,
+    'memory': [],
     'services': []
   }
 });
