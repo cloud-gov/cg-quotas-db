@@ -297,7 +297,7 @@ class DatabaseTest(TestCase):
             'created_at': datetime.datetime(2014, 4, 4)
         }
         row = Quota.prepare_csv_row(sample_row)
-        self.assertEqual('test,id2,4,2014-04-04 00:00:00\n', row)
+        self.assertEqual(['test', 'id2', '4', '2014-04-04 00:00:00'], row)
 
     def test_generate_cvs(self):
         """ Check that function returns a csv generator """
@@ -308,10 +308,11 @@ class DatabaseTest(TestCase):
         quota_data.memory_limit = 1000
         quota.data.append(quota_data)
         db.session.commit()
-        csv = Quota.generate_cvs()
+        csv = Quota.generate_cvs().split('\r\n')
         self.assertEqual(
-            'quota_name,quota_guid,quota_cost,quota_created_date\n', next(csv))
-        self.assertEqual('test_name,test,3.3,None\n', next(csv))
+            'quota_name,quota_guid,quota_cost,quota_created_date',
+            csv[0])
+        self.assertEqual('test_name,test,3.3,None', csv[1])
 
 
 class DatabaseForeignKeyTest(TestCase):

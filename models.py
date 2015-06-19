@@ -1,3 +1,5 @@
+import io
+import csv
 import os
 from datetime import date
 from quotas import db
@@ -152,12 +154,12 @@ class Quota(db.Model):
     @staticmethod
     def prepare_csv_row(row):
         """ Prepares one quota to be exported in a csv row """
-        return ','.join([
+        return [
             row.get('name'),
             row.get('guid'),
             str(row.get('cost')),
             str(row.get('created_at')),
-        ]) + '\n'
+        ]
 
     def details(self):
         """ Displays Quota in dict format """
@@ -232,9 +234,12 @@ class Quota(db.Model):
 
     @classmethod
     def generate_cvs(cls, start_date=None, end_date=None):
-        """ Yield a csv version of the data starting with the header row """
-        yield ','.join([
+        """ Return a csv version of the data starting with the header row """
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow([
             'quota_name', 'quota_guid', 'quota_cost', 'quota_created_date'
-        ]) + "\n"
+        ])
         for row in cls.list_all(start_date=start_date, end_date=end_date):
-            yield cls.prepare_csv_row(row)
+            writer.writerow(cls.prepare_csv_row(row))
+            return output.getvalue()
