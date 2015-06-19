@@ -149,6 +149,16 @@ class Quota(db.Model):
         [[1875, 14]] -> [{'size': 1875, 'days': 14}] """
         return [{'size': memory[0], 'days': memory[1]} for memory in data]
 
+    @staticmethod
+    def prepare_csv_row(row):
+        """ Prepares one quota to be exported in a csv row """
+        return ','.join([
+            row.get('name'),
+            row.get('guid'),
+            str(row.get('cost')),
+            str(row.get('created_at')),
+        ]) + '\n'
+
     def details(self):
         """ Displays Quota in dict format """
         return {
@@ -219,3 +229,12 @@ class Quota(db.Model):
             quota.data_aggregates(start_date=start_date, end_date=end_date)
             for quota in quotas
         ]
+
+    @classmethod
+    def generate_cvs(cls, start_date=None, end_date=None):
+        """ Yield a csv version of the data starting with the header row """
+        yield ','.join([
+            'quota_name', 'quota_guid', 'quota_cost', 'quota_created_date'
+        ]) + "\n"
+        for row in cls.list_all(start_date=start_date, end_date=end_date):
+            yield cls.prepare_csv_row(row)
