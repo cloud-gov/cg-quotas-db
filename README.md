@@ -51,11 +51,6 @@ export APP_SETTINGS="config.DevelopmentConfig"
 python manage.py runserver
 ```
 
-### Crontab
-```
-0 6,12,18 * * * cd ~/Documents/DevOps/Quotas && source .env && workon quotas && python manage.py update_database
-```
-
 ### Cloud Foundry
 ```
 cf push -c "bash cf_commands.sh"
@@ -71,3 +66,18 @@ This is Javascript land, so you can just run `npm install` from within the `stat
 You should be able to start the build process with `npm start`. If you want to build once and not re-trigger builds on file changes then you can use `npm run build`. This can be useful for deployment.
 
 Once you've got both the python app running and you've set up `npm start` to rebuild on file changes, you can just go to [http://127.0.0.1:5000/static/dist/index.html](http://127.0.0.1:5000/static/dist/index.html)
+
+
+## API
+
+#### Quotas
+- List quotas: `/api/quotas/`
+- Individual quota details: `/api/quotas/:guid/`
+
+##### Parameters
+`since` and `until` - define the range for collected memory and services stats. The format for these arguments is `YYYY-MM-DD`.
+If the `until` parameter is not present the date will default to the current date UTC.
+
+Examples
+- ex. `/api/quotas/?since=2013-01-01`
+- ex. `/api/quotas/:guid/?since=2013-01-01&until=2014-01-01`
