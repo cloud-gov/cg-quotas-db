@@ -285,8 +285,37 @@ class DatabaseTest(TestCase):
         sample_data = [[1875, 14], [2000, 15]]
         memory_data = Quota.prepare_memory_data(sample_data)
         self.assertEqual([
-            {'size': 1875, 'days': 14}, {'size': 1875, 'days': 15}
+            {'size': 1875, 'days': 14}, {'size': 2000, 'days': 15}
         ], memory_data)
+
+    def test_prepare_csv_row(self):
+        """ Check that function returns one row of prepared csv data """
+        sample_row = {
+            'name': 'test',
+            'guid': 'id2',
+            'cost': 4,
+            'created_at': datetime.datetime(2014, 4, 4)
+        }
+        row = Quota.prepare_csv_row(sample_row)
+        self.assertEqual(['test', 'id2', '4', '2014-04-04 00:00:00'], row)
+
+    def test_generate_cvs(self):
+        """ Check that function returns a csv generator """
+        quota = Quota(guid='test', name='test_name', url='test_url')
+        db.session.add(quota)
+        quota2 = Quota(guid='test2', name='test_name2', url='test_url2')
+        db.session.add(quota2)
+        db.session.commit()
+        quota_data = QuotaData(quota, datetime.date(2014, 1, 1))
+        quota_data.memory_limit = 1000
+        quota.data.append(quota_data)
+        db.session.commit()
+        csv = Quota.generate_cvs().split('\r\n')
+        self.assertEqual(
+            'quota_name,quota_guid,quota_cost,quota_created_date',
+            csv[0])
+        self.assertEqual('test_name,test,3.3,None', csv[1])
+        self.assertEqual('test_name2,test2,0,None', csv[2])
 
 
 class DatabaseForeignKeyTest(TestCase):
@@ -599,12 +628,6 @@ class QuotaAppTest(TestCase):
         """ Test the main page """
         response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
-
-    def test_api_page(self):
-        """ Test the main api page """
-        response = self.client.get("/api/")
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue('Endpoints' in response.data.decode('utf-8'))
 
     def test_api_quotas_page(self):
         """ Test the quota list page """

@@ -46,7 +46,7 @@ var ListView = Backbone.View.extend({
     this.$('form')[0].reset();
   },
   downloadCSV: function downloadCSV (e) {
-    console.log('k, downloading.... (not really)');
+    window.location = '/quotas.csv';
   }
 });
 

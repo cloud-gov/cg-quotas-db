@@ -1,3 +1,5 @@
+import io
+import csv
 import os
 from datetime import date
 from quotas import db
@@ -141,13 +143,23 @@ class Quota(db.Model):
         if data:
             return data[0][0] * os.getenv('MB_COST_PER_DAY', 0.0033) * \
                 data[0][1]
-        return []
+        return 0
 
     @staticmethod
     def prepare_memory_data(data):
         """ Given a memory array converts it to a more expressive dict
         [[1875, 14]] -> [{'size': 1875, 'days': 14}] """
         return [{'size': memory[0], 'days': memory[1]} for memory in data]
+
+    @staticmethod
+    def prepare_csv_row(row):
+        """ Prepares one quota to be exported in a csv row """
+        return [
+            row.get('name'),
+            row.get('guid'),
+            str(row.get('cost')),
+            str(row.get('created_at')),
+        ]
 
     def details(self):
         """ Displays Quota in dict format """
@@ -219,3 +231,15 @@ class Quota(db.Model):
             quota.data_aggregates(start_date=start_date, end_date=end_date)
             for quota in quotas
         ]
+
+    @classmethod
+    def generate_cvs(cls, start_date=None, end_date=None):
+        """ Return a csv version of the data starting with the header row """
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow([
+            'quota_name', 'quota_guid', 'quota_cost', 'quota_created_date'
+        ])
+        for row in cls.list_all(start_date=start_date, end_date=end_date):
+            writer.writerow(cls.prepare_csv_row(row))
+        return output.getvalue()
