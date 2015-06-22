@@ -2,7 +2,7 @@ import os
 
 from apscheduler.schedulers.background import BackgroundScheduler
 import datetime
-from flask import Flask, Response, jsonify, render_template, request
+from flask import Flask, Response, jsonify, request
 from flask.ext.sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)

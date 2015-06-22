@@ -242,4 +242,4 @@ class Quota(db.Model):
         ])
         for row in cls.list_all(start_date=start_date, end_date=end_date):
             writer.writerow(cls.prepare_csv_row(row))
-            return output.getvalue()
+        return output.getvalue()
