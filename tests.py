@@ -303,6 +303,8 @@ class DatabaseTest(TestCase):
         """ Check that function returns a csv generator """
         quota = Quota(guid='test', name='test_name', url='test_url')
         db.session.add(quota)
+        quota2 = Quota(guid='test2', name='test_name2', url='test_url2')
+        db.session.add(quota2)
         db.session.commit()
         quota_data = QuotaData(quota, datetime.date(2014, 1, 1))
         quota_data.memory_limit = 1000
@@ -313,6 +315,7 @@ class DatabaseTest(TestCase):
             'quota_name,quota_guid,quota_cost,quota_created_date',
             csv[0])
         self.assertEqual('test_name,test,3.3,None', csv[1])
+        self.assertEqual('test_name2,test2,0,None', csv[2])
 
 
 class DatabaseForeignKeyTest(TestCase):

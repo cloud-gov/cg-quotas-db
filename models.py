@@ -143,7 +143,7 @@ class Quota(db.Model):
         if data:
             return data[0][0] * os.getenv('MB_COST_PER_DAY', 0.0033) * \
                 data[0][1]
-        return []
+        return 0
 
     @staticmethod
     def prepare_memory_data(data):
