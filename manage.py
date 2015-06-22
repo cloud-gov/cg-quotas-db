@@ -29,5 +29,11 @@ def tests():
     test_command += "--cover-package=scripts --with-coverage"
     call([test_command], shell=True)
 
+@manager.command
+def build():
+    """ Calls out to npm and ensures that the front end is built """
+    build_command = "cd ./static && npm install && npm run build"
+    call([build_command], shell=True)
+
 if __name__ == '__main__':
     manager.run()
