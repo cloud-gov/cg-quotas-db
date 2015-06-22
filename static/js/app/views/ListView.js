@@ -46,7 +46,21 @@ var ListView = Backbone.View.extend({
     this.$('form')[0].reset();
   },
   downloadCSV: function downloadCSV (e) {
-    window.location = '/quotas.csv';
+    var data = {}, queryString;
+
+    if (this.filterData['since-date']) {
+      data['since'] = this.filterData['since-date'];
+    }
+
+    if (this.filterData['until-date']) {
+      data['until'] = this.filterData['until-date'];
+    }
+
+    queryString = Object.keys(data).map(function(k) {
+      return encodeURIComponent(k) + '=' + encodeURIComponent(data[k]);
+    }).join('&');
+
+    window.location = '/quotas.csv?' + queryString;
   }
 });
 
