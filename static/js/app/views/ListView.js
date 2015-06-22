@@ -17,17 +17,13 @@ var ListView = Backbone.View.extend({
   },
   initialize: function initialize () {
     this.listenTo(this.collection, 'sync', this.render);
-    this.listenTo(this.collection, 'update', function (x){
-      console.log('x', x);
-    });
   },
   render: function render () {
-    console.log('rendering');
     this.$el.html(listTemplateHtml);
     var formControls = this.$('form');
     var tbody = this.$('tbody');
 
-    var formHtml = formTemplate({ collection: this.collection.toJSON() });
+    var formHtml = formTemplate({ collection: this.collection.toJSON(), filter: this.filterData || {} });
     formControls.html(formHtml);
 
     this.collection.each(function(model) {
@@ -42,6 +38,7 @@ var ListView = Backbone.View.extend({
     _.each(formData, function(field) {
       if (field.value != '') { filterData[field.name] = field.value; }
     });
+    this.filterData = filterData;
     this.collection.filterByDates(filterData['since-date'], filterData['until-date'], filterData['quota-selection']);
   },
   clearFilter: function clearFilter (e) {
