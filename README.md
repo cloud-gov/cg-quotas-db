@@ -36,18 +36,29 @@ python manage.py update_database
 
 ### Testing
 Install the dev requirements
+
 ```
 pip install -r requirements-dev.txt
 ```
 
 Run the tests
+
 ```
 python manage.py tests
 ```
 
+### Building the front end
+
+```
+# Have npm install dependencies and build front end
+python manage.py build
+```
+
 ### Start app for dev
+
 ```
 export APP_SETTINGS="config.DevelopmentConfig"
+python manage.py build
 python manage.py runserver
 ```
 
@@ -56,7 +67,7 @@ python manage.py runserver
 cf push -c "bash cf_commands.sh"
 ```
 
-## Setup the Backbone app
+## Getting started with front end development
 This is a browserify built app and uses Backbone as its basic framework. It lives within the `static` directory at the project root.
 
 ### Install Requirements

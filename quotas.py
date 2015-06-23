@@ -5,7 +5,7 @@ import datetime
 from flask import Flask, Response, jsonify, request
 from flask.ext.sqlalchemy import SQLAlchemy
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='')
 app.config.from_object(os.environ['APP_SETTINGS'])
 
 db = SQLAlchemy(app)
@@ -20,11 +20,9 @@ scheduler.start()
 # Import Quota model
 from models import Quota
 
-
 @app.route("/", methods=['GET'])
-def all():
-    """ Initalize site with a list of Quotas """
-    return jsonify(quotas=Quota.list_all())
+def index():
+    return app.send_static_file("index.html")
 
 
 @app.route("/api/quotas/", methods=['GET'])
