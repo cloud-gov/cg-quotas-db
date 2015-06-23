@@ -1,7 +1,6 @@
 ideas.txt
 .env
 *.db
-migrations
 __pycache__/
 .coverage
 static/dist/
