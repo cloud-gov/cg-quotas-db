@@ -7,5 +7,7 @@ if [ $CF_INSTANCE_INDEX = "0" ]; then
     python manage.py db upgrade
     echo "----- Load Database -----"
     python manage.py update_database
+    echo "----- build app ------"
 fi
+python manage.py build
 gunicorn quotas:app --log-file -

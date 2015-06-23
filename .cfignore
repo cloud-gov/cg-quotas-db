@@ -5,3 +5,5 @@ migrations
 __pycache__/
 .coverage
 fixtures/
+static/dist/
+static/node_modules/
