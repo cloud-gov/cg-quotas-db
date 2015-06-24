@@ -1,13 +1,13 @@
 """empty message
 
-Revision ID: 3c1fd9351
+Revision ID: 320bca1fc35
 Revises: 354a51c6a9b
 Create Date: 2015-05-28 12:59:19.230548
 
 """
 
 # revision identifiers, used by Alembic.
-revision = '3c1fd9351'
+revision = '320bca1fc35'
 down_revision = '354a51c6a9b'
 
 from alembic import op
