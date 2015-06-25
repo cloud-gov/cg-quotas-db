@@ -4,4 +4,4 @@ memory: 512m
 applications:
 - name: quotas
   buildpack: https://github.com/ddollar/heroku-buildpack-multi.git
-  stack: lucid64
+  stack: cflinuxfs2
