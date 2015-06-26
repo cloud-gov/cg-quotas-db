@@ -18,7 +18,8 @@ job = scheduler.add_job(load_data, 'cron', hour='3,12,18')
 scheduler.start()
 
 # Import Quota model
-from models import Quota
+from api import QuotaResource
+
 
 @app.route("/", methods=['GET'])
 def index():
@@ -32,7 +33,8 @@ def api_all_dates():
     start_date = request.args.get('since')
     end_date = request.args.get('until', datetime.datetime.today().now())
     return jsonify(
-        {'Quotas': Quota.list_all(start_date=start_date, end_date=end_date)}
+        {'Quotas':
+            QuotaResource.list_all(start_date=start_date, end_date=end_date)}
     )
 
 
@@ -41,7 +43,7 @@ def api_one_dates(guid):
     """ Endpoint that lists one quota details limited by date """
     start_date = request.args.get('since')
     end_date = request.args.get('until', datetime.datetime.today().now())
-    data = Quota.list_one_aggregate(
+    data = QuotaResource.list_one_aggregate(
         guid=guid, start_date=start_date, end_date=end_date)
     if data:
         return jsonify(data)
@@ -54,7 +56,7 @@ def download_quotas():
     """ Route for downloading quotas """
     start_date = request.args.get('since')
     end_date = request.args.get('until', datetime.datetime.today().now())
-    csv = Quota.generate_cvs(start_date=start_date, end_date=end_date)
+    csv = QuotaResource.generate_cvs(start_date=start_date, end_date=end_date)
     return Response(csv, mimetype='text/csv')
 
 if __name__ == "__main__":
