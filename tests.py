@@ -346,7 +346,8 @@ class APITest(TestCase):
         db.create_all()
         quota = Quota(guid='test_guid', name='test_name', url='test_url')
         db.session.add(quota)
-        quota2 = QuotaResource(guid='test_guid_2', name='test_name_2', url='test_url_2')
+        quota2 = QuotaResource(
+            guid='test_guid_2', name='test_name_2', url='test_url_2')
         db.session.add(quota2)
         db.session.commit()
         quota_data = QuotaData(quota, datetime.date(2013, 1, 1))
@@ -525,7 +526,6 @@ class APITest(TestCase):
             QuotaDataResource, start_date='2013-12-31', end_date='2014-1-2')
         self.assertEqual(len(data), 1)
 
-
     def test_service_aggregate(self):
         """ Check that the aggregate function return the number of days a
         ServiceResource has been active
@@ -544,6 +544,7 @@ class APITest(TestCase):
         # Data looks like  [('postgres', 'pgres', 1), ('es', 'elastic', 1)]
         # Addition test allows it to work with both sqlite and postgres
         self.assertEqual(data[0][2] + data[1][2], 2)
+
 
 class QuotaAppTest(TestCase):
     """ Test Database """
