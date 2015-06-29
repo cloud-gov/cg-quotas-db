@@ -95,7 +95,6 @@ class QuotaResource(Quota):
         return {
             'guid': self.guid,
             'name': self.name,
-            'url': self.url,
             'created_at': str(self.created_at),
             'updated_at': str(self.updated_at)
         }
@@ -109,7 +108,6 @@ class QuotaResource(Quota):
         return {
             'guid': self.guid,
             'name': self.name,
-            'url': self.url,
             'created_at': str(self.created_at),
             'updated_at': str(self.updated_at),
             'memory': memory_data,
@@ -125,7 +123,6 @@ class QuotaResource(Quota):
         return {
             'guid': self.guid,
             'name': self.name,
-            'url': self.url,
             'created_at': str(self.created_at),
             'updated_at': str(self.updated_at),
             'memory': self.prepare_memory_data(memory_data),
