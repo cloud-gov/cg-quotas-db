@@ -32,7 +32,7 @@ def tests():
 @manager.command
 def build():
     """ Calls out to npm and ensures that the front end is built """
-    build_command = "cd ./static && npm install && npm run build"
+    build_command = "npm install && npm run build"
     call([build_command], shell=True)
 
 if __name__ == '__main__':

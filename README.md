@@ -71,12 +71,12 @@ cf push -c "bash cf_commands.sh"
 This is a browserify built app and uses Backbone as its basic framework. It lives within the `static` directory at the project root.
 
 ### Install Requirements
-This is Javascript land, so you can just run `npm install` from within the `static` directory.
+This is Javascript land, so you can just run `npm install` from within the project root directory.
 
 ### Start app for dev
 You should be able to start the build process with `npm start`. If you want to build once and not re-trigger builds on file changes then you can use `npm run build`. This can be useful for deployment.
 
-Once you've got both the python app running and you've set up `npm start` to rebuild on file changes, you can just go to [http://127.0.0.1:5000/static/dist/index.html](http://127.0.0.1:5000/static/dist/index.html)
+Once you've got both the python app running and you've set up `npm start` to rebuild on file changes, you can just go to [http://127.0.0.1:5000](http://127.0.0.1:5000)
 
 
 ## API
