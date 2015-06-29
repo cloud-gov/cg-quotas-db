@@ -1,8 +1,12 @@
 {
   "name": "cf-quotas-db-frontend",
   "version": "1.0.0",
-  "description": "",
+  "description": "Frontend app for displaying Cloud Foundry quotas data",
   "main": "main.js",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:18F/cf-quotas-db.git"
+  },
   "scripts": {
     "start": "npm run html && npm run watch:sass & npm run watch:browserify",
     "build": "npm run html && npm run sass && npm run browserify",
