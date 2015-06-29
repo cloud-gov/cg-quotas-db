@@ -395,7 +395,7 @@ class APITest(TestCase):
         quota_dict = quota.details()
         self.assertEqual(
             sorted(list(quota_dict.keys())),
-            ['created_at', 'guid', 'name', 'updated_at', 'url'])
+            ['created_at', 'guid', 'name', 'updated_at'])
 
     def test_list_one_details(self):
         """ Check that list one function returns dict of one quota """
