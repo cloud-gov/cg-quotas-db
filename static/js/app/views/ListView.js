@@ -17,6 +17,7 @@ var ListView = Backbone.View.extend({
   },
   initialize: function initialize () {
     this.listenTo(this.collection, 'sync', this.render);
+    this.filterData = {};
   },
   render: function render () {
     this.$el.html(listTemplateHtml);
