@@ -14,7 +14,9 @@ var ListItemView = Backbone.View.extend({
     this.render();
   },
   render: function render () {
-    var html = this.template(this.model.toJSON());
+    var quota = this.model.toJSON();
+    quota['cost'] = quota['cost'].toFixed(2);
+    var html = this.template(quota);
     this.$el.html(html);
   }
 });
