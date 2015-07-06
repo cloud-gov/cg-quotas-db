@@ -67,6 +67,11 @@ python manage.py runserver
 cf push -c "bash cf_commands.sh"
 ```
 
+### Authentication
+This app uses HTTP Basic Authentication. Passwords can be set using the `SECRET_USERNAME` and `SECRET_PASSWORD` env variables. The default username and password for testing are:
+password: `admin`
+username: `admin`
+
 ## Getting started with front end development
 This is a browserify built app and uses Backbone as its basic framework. It lives within the `static` directory at the project root.
 

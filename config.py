@@ -7,6 +7,8 @@ class Config(object):
     CSRF_ENABLED = True
     SECRET_KEY = os.environ.get('SECRET_KEY', "None")
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    USERNAME = os.environ.get('SECRET_USERNAME', 'admin')
+    PASSWORD = os.environ.get('SECRET_PASSWORD', 'admin')
 
 
 class ProductionConfig(Config):

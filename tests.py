@@ -1,6 +1,7 @@
 # Extral Imports
 from unittest import mock
 from flask.ext.testing import TestCase
+import base64
 import copy
 import datetime
 import requests
@@ -13,6 +14,11 @@ from quotas import app, db
 from models import Quota, QuotaData, Service
 from api import QuotaResource, QuotaDataResource, ServiceResource
 import scripts
+
+# Auth testings
+from config import Config
+from werkzeug.test import Client
+from werkzeug.datastructures import Headers
 
 # Flip app settings to testing
 app.config.from_object('config.TestingConfig')
@@ -482,7 +488,6 @@ class APITest(TestCase):
         data = QuotaDataResource.aggregate(quota_guid='test_guid')
         # Data looks like this [(1000, 2), (2000, 1)]
         # Addition test allows the test to work with postgres and sqlite
-        print(data)
         self.assertEqual(data[0][1] + data[1][1], 3)
 
         # Aggregate with dates
@@ -546,6 +551,12 @@ class APITest(TestCase):
         self.assertEqual(data[0][2] + data[1][2], 2)
 
 
+# Set header for auth
+valid_header = Headers()
+auth = '{0}:{1}'.format(Config.USERNAME, Config.PASSWORD).encode('ascii')
+valid_header.add('Authorization', b'Basic ' + base64.b64encode(auth))
+
+
 class QuotaAppTest(TestCase):
     """ Test Database """
 
@@ -580,20 +591,61 @@ class QuotaAppTest(TestCase):
         db.session.remove()
         db.drop_all()
 
+    def test_main_page_locked(self):
+        """ Check if main page is locked """
+        response = self.client.get("/")
+        self.assert_401(response)
+        self.assertTrue('WWW-Authenticate' in response.headers)
+        self.assertTrue('Basic' in response.headers['WWW-Authenticate'])
+
+    def test_api_page_locked(self):
+        """ Check if api endpoints are locked """
+        response = self.client.get("/api/quotas/")
+        self.assert_401(response)
+        response = self.client.get("/api/quotas/guid/")
+        self.assert_401(response)
+
+    def test_admin_page_rejects_bad_password(self):
+        """ Check that incorrect password won't allow access """
+        h = Headers()
+        auth = '{0}:foo'.format(Config.USERNAME).encode('ascii')
+        h.add('Authorization', b'Basic ' + base64.b64encode(auth))
+        rv = Client.open(self.client, path='/', headers=h)
+        self.assert_401(rv)
+
+    def test_admin_page_rejects_bad_username(self):
+        """ Check that incorrect username won't allow access """
+        h = Headers()
+        auth = 'foo:{0}'.format(Config.PASSWORD).encode('ascii')
+        h.add('Authorization', b'Basic ' + base64.b64encode(auth))
+        rv = Client.open(self.client, path='/', headers=h)
+        self.assert_401(rv)
+
+    def test_admin_page_allows_valid_login(self):
+        """ Check that correct username and password will allow access """
+        h = Headers()
+        auth = '{0}:{1}'.format(
+            Config.USERNAME, Config.PASSWORD).encode('ascii')
+        h.add('Authorization', b'Basic ' + base64.b64encode(auth))
+        rv = Client.open(self.client, path='/', headers=h)
+        self.assert_200(rv)
+
     def test_main_page(self):
         """ Test the main page """
-        response = self.client.get("/")
+        response = Client.open(self.client, path='/', headers=valid_header)
         self.assertEqual(response.status_code, 200)
 
     def test_api_quotas_page(self):
         """ Test the quota list page """
-        response = self.client.get("/api/quotas/")
+        response = Client.open(
+            self.client, path="/api/quotas/", headers=valid_header)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json['Quotas']), 2)
 
     def test_api_quota_detail_page(self):
         """ Test the quota details page """
-        response = self.client.get("/api/quotas/guid/")
+        response = Client.open(
+            self.client, path="/api/quotas/guid/", headers=valid_header)
         self.assertEqual(response.status_code, 200)
         # Check if quota was rendered
         self.assertTrue('guid' in response.json.keys())
@@ -604,13 +656,16 @@ class QuotaAppTest(TestCase):
 
     def test_api_quota_detail_page_no_data(self):
         """ Test the quota details page when there is no data """
-        response = self.client.get("/api/quota/wrongguid/")
+        response = Client.open(
+            self.client, path="/api/quota/wrongguid/", headers=valid_header)
         self.assertEqual(response.status_code, 404)
 
     def test_api_quota_detail_dates(self):
         """ Test the quota details date range page functions """
-        response = self.client.get(
-            "/api/quotas/guid/?since=2013-12-31&until=2014-1-1")
+        response = Client.open(
+            self.client,
+            path="/api/quotas/guid/?since=2013-12-31&until=2014-1-1",
+            headers=valid_header)
         self.assertEqual(response.status_code, 200)
         # Check if quota data was rendered within date range
         self.assertEqual(len(response.json['memory']), 1)
@@ -619,7 +674,10 @@ class QuotaAppTest(TestCase):
 
     def test_api_quota_detail_page_one_date(self):
         """ Test the quota details page with only the since parameter """
-        response = self.client.get("/api/quotas/guid/?since=2013-12-31")
+        response = Client.open(
+            self.client,
+            path="/api/quotas/guid/?since=2013-12-31",
+            headers=valid_header)
         self.assertEqual(response.status_code, 200)
         # Check if quota was rendered
         self.assertTrue('guid' in response.json.keys())
@@ -630,12 +688,16 @@ class QuotaAppTest(TestCase):
 
     def test_api_quota_detail_dates_no_data(self):
         """ Test the quota details page when there are date but no data """
-        response = self.client.get("/api/quota/wrongguid/2013-12-31/2014-1-1/")
+        response = Client.open(
+            self.client,
+            path="/api/quota/wrongguid/2013-12-31/2014-1-1/",
+            headers=valid_header)
         self.assertEqual(response.status_code, 404)
 
     def test_api_quotas_list_page(self):
         """ Test the quotas list page """
-        response = self.client.get("/api/quotas/")
+        response = Client.open(
+            self.client, path="/api/quotas/", headers=valid_header)
         self.assertEqual(response.status_code, 200)
         data = response.json['Quotas']
         # Check if all quotas present
@@ -647,8 +709,10 @@ class QuotaAppTest(TestCase):
 
     def test_api_quotas_list_dates(self):
         """ Test the quotas list page with dates """
-        response = self.client.get(
-            "/api/quotas/?since=2012-12-31&until=2013-1-1")
+        response = Client.open(
+            self.client,
+            path="/api/quotas/?since=2012-12-31&until=2013-1-1",
+            headers=valid_header)
         self.assertEqual(response.status_code, 200)
         data = response.json['Quotas']
         # Check if all quotas present
@@ -660,7 +724,10 @@ class QuotaAppTest(TestCase):
 
     def test_api_quotas_list_page_one_date(self):
         """ Test the quotas list page when only since date is given """
-        response = self.client.get("/api/quotas/?since=2012-12-31")
+        response = Client.open(
+            self.client,
+            path="/api/quotas/?since=2012-12-31",
+            headers=valid_header)
         self.assertEqual(response.status_code, 200)
         data = response.json['Quotas']
         # Check if all quotas present
@@ -743,6 +810,7 @@ class LoadingTest(TestCase):
         self.assertEqual(len(quota.services), 2)
         self.assertEqual(quota.services[0].guid, 'guid_1')
         self.assertEqual(quota.services[0].instance_name, 'instance_1')
+
 
 if __name__ == "__main__":
     unittest.main()
