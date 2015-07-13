@@ -1,4 +1,3 @@
-import io
 import csv
 import os
 
@@ -161,11 +160,24 @@ class QuotaResource(Quota):
     @classmethod
     def generate_cvs(cls, start_date=None, end_date=None):
         """ Return a csv version of the data starting with the header row """
-        output = io.StringIO()
-        writer = csv.writer(output)
-        writer.writerow([
-            'quota_name', 'quota_guid', 'quota_cost', 'quota_created_date'
-        ])
-        for row in cls.list_all(start_date=start_date, end_date=end_date):
-            writer.writerow(cls.prepare_csv_row(row))
-        return output.getvalue()
+        def data_generator():
+            writer = csv.writer(Echo())
+            yield writer.writerow([
+                'quota_name', 'quota_guid', 'quota_cost', 'quota_created_date'
+            ])
+            for row in cls.list_all(start_date=start_date, end_date=end_date):
+                yield writer.writerow(cls.prepare_csv_row(row))
+        return data_generator()
+
+
+class Echo(object):
+    """ An object that implemetns just the write method of a file-like
+    interface.
+    Idea from:
+    https://docs.djangoproject.com/en/1.8/howto/outputting-csv/
+    """
+
+    def write(self, value):
+        """ Write the value by returning it, instead of storing it in a buffer
+        """
+        return value
