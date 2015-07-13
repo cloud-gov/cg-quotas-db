@@ -451,12 +451,13 @@ class APITest(TestCase):
 
     def test_generate_cvs(self):
         """ Check that function returns a csv generator """
-        csv = QuotaResource.generate_cvs().split('\r\n')
+        csv = list(QuotaResource.generate_cvs())
         self.assertEqual(
-            'quota_name,quota_guid,quota_cost,quota_created_date',
+            'quota_name,quota_guid,quota_cost,quota_created_date\r\n',
             csv[0])
-        self.assertEqual('test_name,test_guid,6.6,None', csv[1])
-        self.assertEqual('test_name_2,test_guid_2,0,None', csv[2])
+
+        self.assertEqual('test_name,test_guid,6.6,None\r\n', csv[1])
+        self.assertEqual('test_name_2,test_guid_2,0,None\r\n', csv[2])
 
     def test_quota_list_one_with_data_details(self):
         """ Check that list one returns a list of data details within the

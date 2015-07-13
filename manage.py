@@ -26,7 +26,7 @@ def tests():
     """ Run tests """
     test_command = "nosetests --cover-package=cloudfoundry "
     test_command += "--cover-package=models --cover-package=quotas "
-    test_command += "--cover-package=scripts --with-coverage"
+    test_command += "--cover-package=scripts --cover-package api --with-coverage"
     call([test_command], shell=True)
 
 @manager.command
