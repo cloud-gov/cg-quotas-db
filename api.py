@@ -70,8 +70,8 @@ class QuotaResource(Quota):
         """ Calculate the cost of services currently contains a
         hard-coded cost for the short-term """
         if data:
-            return data[0][0] * os.getenv('MB_COST_PER_DAY', 0.0033) * \
-                data[0][1]
+            mb_cost = os.getenv('MB_COST_PER_DAY', 0.0033)
+            return sum([mem[0] * mem[1] * mb_cost for mem in data])
         return 0
 
     @staticmethod
