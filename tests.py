@@ -414,7 +414,7 @@ class APITest(TestCase):
         cost """
         one_quota = QuotaResource.list_one_aggregate(guid='test_guid')
         self.assertEqual(one_quota['guid'], 'test_guid')
-        self.assertEqual(one_quota['cost'], 6.6)
+        self.assertEqual(one_quota['cost'], 13.2)
 
     def test_list_all(self):
         """ Check that list all function returns dict of multiple quotas """
@@ -423,12 +423,19 @@ class APITest(TestCase):
         self.assertEqual(quotas[0]['guid'], 'test_guid')
         self.assertEqual(quotas[1]['guid'], 'test_guid_2')
 
-    def test_get_mem_cost(self):
+    def test_get_mem_single_cost(self):
         """ Check that the cost function works with multiple days
-        and default """
-        sample_data = [[1875, 14], [2000, 15]]
+        with single mem limit """
+        sample_data = [[1875, 14]]
         cost = QuotaResource.get_mem_cost(sample_data)
         self.assertEqual(cost, 86.625)
+
+    def test_get_mem_cost_multipe_mem_types(self):
+        """ Check that the cost function works with multiple days
+        with multiple mem limits """
+        sample_data = [[1875, 14], [2000, 15]]
+        cost = QuotaResource.get_mem_cost(sample_data)
+        self.assertEqual(cost, 185.625)
 
     def test_prepare_memory_data(self):
         """ Check that memory data is prepared into more descriptive format """
@@ -455,7 +462,7 @@ class APITest(TestCase):
         self.assertEqual(
             'quota_name,quota_guid,quota_cost,quota_created_date',
             csv[0])
-        self.assertEqual('test_name,test_guid,6.6,None', csv[1])
+        self.assertEqual('test_name,test_guid,13.2,None', csv[1])
         self.assertEqual('test_name_2,test_guid_2,0,None', csv[2])
 
     def test_quota_list_one_with_data_details(self):
