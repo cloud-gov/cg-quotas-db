@@ -44,9 +44,10 @@ def update_quota(quota):
     """ Load one quota into database """
     quota_model, quota_created = get_or_create(
         model=Quota,
-        guid=quota['metadata']['guid'],
-        name=quota['entity']['name'],
-        url=quota['metadata']['url'])
+        guid=quota['metadata']['guid']
+    )
+    quota_model.url = quota['metadata']['url']
+    quota_model.name = quota['entity']['name']
     quota_model.created_at = get_datetime(quota['metadata']['created_at'])
     updated = quota['metadata'].get('updated_at')
     if updated:
