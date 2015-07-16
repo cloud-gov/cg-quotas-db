@@ -5,7 +5,7 @@ from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
 
 from quotas import app, db
-from scripts import load_data
+from updatescript import load_data
 app.config.from_object(os.environ['APP_SETTINGS'])
 
 manager = Manager(app)
