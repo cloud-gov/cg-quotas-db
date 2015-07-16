@@ -38,10 +38,14 @@ def update_quota_data(quota_model, entity_data, date):
         model=QuotaData,
         quota=quota_model.guid,
         date_collected=date)
-    quota_data.memory_limit = entity_data['memory_limit']
-    quota_data.total_routes = entity_data['total_routes']
-    quota_data.total_services = entity_data['total_services']
-    quota_model.data.append(quota_data)
+    instance = QuotaData.query.filter_by(
+        quota=quota_model.guid,
+        date_collected=datetime.date(2015, 7, 9)).first()
+    if data_created and instance:
+        quota_data.memory_limit = entity_data['memory_limit']
+        quota_data.total_routes = entity_data['total_routes']
+        quota_data.total_services = entity_data['total_services']
+        quota_model.data.append(quota_data)
 
 
 def update_quota(quota):
