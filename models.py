@@ -74,10 +74,12 @@ class Quota(db.Model):
     data = relationship("QuotaData")
     services = relationship("Service")
 
-    def __init__(self, guid, name, url):
+    def __init__(self, guid, name=None, url=None):
         self.guid = guid
-        self.name = name
-        self.url = url
+        if name:
+            self.name = name
+        if url:
+            self.url = url
 
     def __repr__(self):
         return '<name {}>'.format(self.name)

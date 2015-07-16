@@ -771,6 +771,21 @@ class LoadingTest(TestCase):
         quota = Quota.query.filter_by(guid='test_quota').first()
         self.assertEqual(quota.name, 'test_quota_name')
 
+    def test_name_change(self):
+        """ Test that function changes name but keeps guid in case of a name
+        change """
+        scripts.update_quota(mock_quota)
+        quota = Quota.query.filter_by(guid='test_quota').first()
+        self.assertEqual(quota.name, 'test_quota_name')
+        self.assertEqual(quota.data[0].memory_limit, 1875)
+
+        mock_quota_name = copy.deepcopy(mock_quota)
+        mock_quota_name['entity']['name'] = "new_name"
+        scripts.update_quota(mock_quota_name)
+        quota = Quota.query.filter_by(guid='test_quota').first()
+        self.assertEqual(quota.name, 'new_name')
+        self.assertEqual(quota.data[0].memory_limit, 1875)
+
     def test_update_quota_data(self):
         """ Test that function inserts quota data into database """
         # Add quota
