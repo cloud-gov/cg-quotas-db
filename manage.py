@@ -3,6 +3,7 @@ from subprocess import call
 
 from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
+from flask.ext.alchemydumps import AlchemyDumps, AlchemyDumpsCommand
 
 from quotas import app, db
 from scripts import load_data
@@ -13,6 +14,10 @@ manager = Manager(app)
 # Migration Commands
 migrate = Migrate(app, db)
 manager.add_command('db', MigrateCommand)
+
+# init Alchemy Dumps
+alchemydumps = AlchemyDumps(app, db)
+manager.add_command('alchemydumps', AlchemyDumpsCommand)
 
 
 @manager.command
@@ -28,6 +33,7 @@ def tests():
     test_command += "--cover-package=models --cover-package=quotas "
     test_command += "--cover-package=scripts --with-coverage"
     call([test_command], shell=True)
+
 
 @manager.command
 def build():
