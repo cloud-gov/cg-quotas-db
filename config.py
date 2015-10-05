@@ -1,4 +1,5 @@
 import os
+import json
 
 
 class Config(object):
@@ -6,9 +7,15 @@ class Config(object):
     TESTING = False
     CSRF_ENABLED = True
     SECRET_KEY = os.environ.get('SECRET_KEY', "None")
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
     USERNAME = os.environ.get('SECRET_USERNAME', 'admin')
     PASSWORD = os.environ.get('SECRET_PASSWORD', 'admin')
+    # Database
+    CF_SERVICES = os.getenv('VCAP_SERVICES')
+    if CF_SERVICES:
+        CF_SERVICES = json.loads(CF_SERVICES)
+        SQLALCHEMY_DATABASE_URI = CF_SERVICES['rds'][0]['credentials']['uri']
+    else:
+        SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
 
 
 class ProductionConfig(Config):
