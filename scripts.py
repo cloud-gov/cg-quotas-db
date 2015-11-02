@@ -1,13 +1,12 @@
+""" Script for adding quotas to database """
+
 import os
 import datetime
 import logging
 
 from cloudfoundry import CloudFoundry
-from models import Quota, QuotaData, Service
+from models import Quota, QuotaData
 from quotas import db
-
-
-""" App scripts """
 
 
 def get_or_create(model, **kwargs):
@@ -58,50 +57,11 @@ def update_quota(quota):
     return quota_model
 
 
-def load_services(space_summary, quota):
-    """ Load services into database """
-    services = space_summary.get('services')
-    for service in services:
-        if 'service_plan' in service:
-            service_instance, created = get_or_create(
-                model=Service,
-                quota=quota.guid,
-                guid=service['service_plan']['service']['guid'],
-                instance_name=service['service_plan']['name'],
-                label=service['service_plan']['service']['label'],
-                provider=service['service_plan']['service']['provider'],
-                date_collected=datetime.date.today())
-            service_instance.user_defined = True
-            quota.services.append(service_instance)
-            db.session.merge(quota)
-            db.session.commit()
-
-
-def process_spaces(cf_api, spaces_url, quota):
-    """ Extracts services from each space """
-    spaces_gen = cf_api.yield_request(endpoint=spaces_url)
-    for page in spaces_gen:
-        for space in page['resources']:
-            space_url = '%s/summary' % space['metadata']['url']
-            space_summary = cf_api.make_request(endpoint=space_url).json()
-            load_services(space_summary=space_summary, quota=quota)
-
-
-def process_org(cf_api, org):
-    """ Extracts quota data from org, calls api, and updates data """
-    quota_definition_url = org['entity']['quota_definition_url']
-    quota = cf_api.make_request(endpoint=quota_definition_url)
-    quota_model = update_quota(quota.json())
-    spaces_url = org['entity']['spaces_url']
-    process_spaces(cf_api=cf_api, spaces_url=spaces_url, quota=quota_model)
-
-
 def load_quotas(cf_api):
     """ Load quotas into database """
-    api_gen = cf_api.get_orgs()
-    for page in api_gen:
-        for org in page['resources']:
-            process_org(cf_api=cf_api, org=org)
+    quotas = cf_api.get_quotas()
+    for quota in quotas:
+        update_quota(quota)
 
 
 def load_data():
