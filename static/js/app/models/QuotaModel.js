@@ -13,7 +13,6 @@ var QuotaModel = Backbone.Model.extend({
     'created_at': undefined,
     'updated_at': undefined,
     'memory': [],
-    'services': []
   }
 });
 
