@@ -11,8 +11,8 @@ import unittest
 # App imports
 from cloudfoundry import CloudFoundry
 from quotas import app, db
-from models import Quota, QuotaData, Service
-from api import QuotaResource, QuotaDataResource, ServiceResource
+from models import Quota, QuotaData
+from api import QuotaResource, QuotaDataResource
 import scripts
 
 # Auth testings
@@ -35,7 +35,7 @@ mock_quota = {
         'name': 'test_quota_name',
         'memory_limit': 1875,
         'total_routes': 5,
-        'total_services': 1,
+        'total_services': 2
     }
 }
 mock_quota_2 = copy.deepcopy(mock_quota)
@@ -169,7 +169,7 @@ class CloudFoundryTest(unittest.TestCase):
     def test_get_quotas(self):
         """ Test that quotas are obtained properly """
         quotas = list(self.cf.get_quotas())
-        self.assertEqual(len(quotas[0]['resources']), 2)
+        self.assertEqual(len(quotas), 2)
 
     @mock_token
     @mock_quotas_request
@@ -293,53 +293,6 @@ class DatabaseForeignKeyTest(TestCase):
         quota = Quota.query.filter_by(guid='guid').first()
         self.assertEqual(len(list(quota.data)), 2)
 
-    def test_service_data(self):
-        """ Check that service data can be added """
-        # Adding Service data
-        service_data = Service(
-            quota=self.quota, guid='sid', instance_name='test',
-            label='test_lable', provider='test_provier',
-            date_collected=datetime.date(2014, 1, 1))
-        self.quota.services.append(service_data)
-        db.session.commit()
-        # Retrieve Service data
-        quota = Quota.query.filter_by(guid='guid').first()
-        self.assertEqual(quota.name, 'test_name')
-        self.assertEqual(len(quota.services), 1)
-        self.assertEqual(quota.services[0].guid, 'sid')
-        self.assertEqual(quota.services[0].instance_name, 'test')
-        self.assertEqual(quota.services[0].provider, 'test_provier')
-        self.assertEqual(quota.services[0].date_collected.year, 2014)
-
-    def test_primary_key_constraints_for_service_data(self):
-        """ Check that the PrimaryKeyConstraints work for Service """
-        failed = False
-        service_1 = Service(quota=self.quota, guid='sid', instance_name='test')
-        service_2 = Service(quota=self.quota, guid='sid', instance_name='test')
-        self.quota.services.append(service_1)
-        self.quota.services.append(service_2)
-        try:
-            db.session.commit()
-        except:
-            failed = True
-        self.assertTrue(failed)
-
-    def test_service_data_one_to_many(self):
-        """ Check that the relationship between Quota and Service is
-        one to many """
-        # Creating Quota and 2 instances Service with diff. dates
-        service_1 = Service(
-            quota=self.quota, guid='sid', instance_name='test')
-        service_1.date_collected = datetime.date(2015, 1, 1)
-        service_2 = Service(
-            quota=self.quota, guid='sid_2', instance_name='test_2')
-        self.quota.services.append(service_1)
-        self.quota.services.append(service_2)
-        db.session.commit()
-        # Retrieve QuotaData
-        quota = Quota.query.filter_by(guid='guid').first()
-        self.assertEqual(len(list(quota.services)), 2)
-
 
 class APITest(TestCase):
     """ Test API """
@@ -366,28 +319,6 @@ class APITest(TestCase):
         quota_data.memory_limit = 1000
         quota.data.append(quota_data)
         db.session.commit()
-        service_1 = Service(
-            quota='test_guid', guid='sid', instance_name='test')
-        service_1.date_collected = datetime.date(2014, 1, 1)
-        service_2 = Service(
-            quota='test_guid', guid='sid_2', instance_name='test_2')
-        quota.services.append(service_1)
-        quota.services.append(service_2)
-        db.session.commit()
-
-        # Add multiple services
-        service_1 = Service(
-            quota='test_guid_2', guid='pgres', instance_name='postgres')
-        service_1.date_collected = datetime.date(2013, 1, 15)
-        service_2 = Service(
-            quota='test_guid_2', guid='pgres', instance_name='postgres')
-        service_2.date_collected = datetime.date(2014, 1, 31)
-        service_3 = Service(
-            quota='test_guid_2', guid='elastic', instance_name='es')
-        service_3.date_collected = datetime.date(2013, 1, 15)
-        quota2.services.append(service_1)
-        quota2.services.append(service_2)
-        quota2.services.append(service_3)
         db.session.commit()
 
     def tearDown(self):
@@ -506,26 +437,6 @@ class APITest(TestCase):
         # Addition test allows the test to work with postgres and sqlite
         self.assertEqual(data[0][1] + data[1][1], 2)
 
-    def test_service_details(self):
-        """ Check that details function returns dict for a specific
-        service object """
-        service = ServiceResource.query.filter_by(quota='test_guid').first()
-        self.assertTrue('instance_name' in service.details().keys())
-
-    def test_service_list_one_with_data_details(self):
-        """ Check that list one returns a list of data details within the
-        designated time period """
-        # Check that correct services data is returned by date strings
-        one_quota = QuotaResource.list_one_details(
-            guid='test_guid', start_date='2013-12-31', end_date='2014-1-2')
-        self.assertEqual(len(one_quota['services']), 1)
-        # Check that correct services data is returned by datetime.dates
-        one_quota = QuotaResource.list_one_details(
-            guid='test_guid',
-            start_date=datetime.date(2013, 12, 31),
-            end_date=datetime.date(2014, 1, 2))
-        self.assertEqual(len(one_quota['services']), 1)
-
     def test_foreign_key_preparer(self):
         """ Verify that function prepares a details list for a given
         foreign key """
@@ -537,25 +448,6 @@ class APITest(TestCase):
         data = quota.foreign_key_preparer(
             QuotaDataResource, start_date='2013-12-31', end_date='2014-1-2')
         self.assertEqual(len(data), 1)
-
-    def test_service_aggregate(self):
-        """ Check that the aggregate function return the number of days a
-        ServiceResource has been active
-        """
-        # Aggregate
-        # Data looks like  [('postgres', 'pgres', 2), ('es', 'elastic', 1)]
-        # Addition test allows it to work with both sqlite and postgres
-        data = ServiceResource.aggregate(quota_guid='test_guid_2')
-        self.assertEqual(data[0][2] + data[1][2], 3)
-
-        # Aggregate with dates
-        data = ServiceResource.aggregate(
-            quota_guid='test_guid_2',
-            start_date='2013-01-01',
-            end_date='2013-01-31')
-        # Data looks like  [('postgres', 'pgres', 1), ('es', 'elastic', 1)]
-        # Addition test allows it to work with both sqlite and postgres
-        self.assertEqual(data[0][2] + data[1][2], 2)
 
 
 # Set header for auth
@@ -585,12 +477,6 @@ class QuotaAppTest(TestCase):
         quota_data_2.memory_limit = 1000
         quota_1.data.append(quota_data)
         quota_1.data.append(quota_data_2)
-        service_1 = Service(quota=quota_1, guid='sid', instance_name='test')
-        service_1.date_collected = datetime.date(2014, 1, 1)
-        service_2 = Service(
-            quota=quota_1, guid='sid_2', instance_name='test_2')
-        quota_1.services.append(service_1)
-        quota_1.services.append(service_2)
         db.session.commit()
 
     @classmethod
@@ -658,8 +544,6 @@ class QuotaAppTest(TestCase):
         self.assertTrue('guid' in response.json.keys())
         # Check if quota data was rendered
         self.assertEqual(len(response.json['memory']), 1)
-        # Check if service data was rendered
-        self.assertEqual(len(response.json['services']), 2)
 
     def test_api_quota_detail_page_no_data(self):
         """ Test the quota details page when there is no data """
@@ -676,8 +560,6 @@ class QuotaAppTest(TestCase):
         self.assertEqual(response.status_code, 200)
         # Check if quota data was rendered within date range
         self.assertEqual(len(response.json['memory']), 1)
-        # Check if service data was rendered
-        self.assertEqual(len(response.json['services']), 1)
 
     def test_api_quota_detail_page_one_date(self):
         """ Test the quota details page with only the since parameter """
@@ -690,8 +572,6 @@ class QuotaAppTest(TestCase):
         self.assertTrue('guid' in response.json.keys())
         # Check if quota data was rendered
         self.assertEqual(len(response.json['memory']), 1)
-        # Check if service data was rendered
-        self.assertEqual(len(response.json['services']), 2)
 
     def test_api_quota_detail_dates_no_data(self):
         """ Test the quota details page when there are date but no data """
@@ -711,8 +591,6 @@ class QuotaAppTest(TestCase):
         self.assertEqual(len(data), 2)
         # Check if quota data contains data details
         self.assertEqual(len(data[0]['memory']), 1)
-        # Check if quota data contains service details
-        self.assertEqual(len(data[0]['services']), 2)
 
     def test_api_quotas_list_dates(self):
         """ Test the quotas list page with dates """
@@ -726,8 +604,6 @@ class QuotaAppTest(TestCase):
         self.assertEqual(len(data), 2)
         # Check if quota data contains memory data only when inbetween dates
         self.assertEqual(len(data[0]['memory']), 0)
-        # Check if quota data contains service data only when inbetween dates
-        self.assertEqual(len(data[0]['services']), 0)
 
     def test_api_quotas_list_page_one_date(self):
         """ Test the quotas list page when only since date is given """
@@ -741,8 +617,6 @@ class QuotaAppTest(TestCase):
         self.assertEqual(len(data), 2)
         # Check if quota data contains data details
         self.assertEqual(len(data[0]['memory']), 1)
-        # Check if quota data contains service details
-        self.assertEqual(len(data[0]['services']), 2)
 
 
 class LoadingTest(TestCase):
@@ -823,15 +697,6 @@ class LoadingTest(TestCase):
         # Check if there are duplicates
         found = Quota.query.filter_by(guid='test_guid').all()
         self.assertEqual(len(found), 1)
-
-    def test_load_services(self):
-        quota = Quota(guid='test_guid', name='test_name', url='test_url')
-        db.session.add(quota)
-        db.session.commit()
-        scripts.load_services(space_summary=mock_space_summary, quota=quota)
-        self.assertEqual(len(quota.services), 2)
-        self.assertEqual(quota.services[0].guid, 'guid_1')
-        self.assertEqual(quota.services[0].instance_name, 'instance_1')
 
 
 if __name__ == "__main__":
