@@ -3,7 +3,9 @@ var $ = require('jquery');
 var _ = require('underscore');
 
 var QuotaModel = Backbone.Model.extend({
-  url: '/api/quotas/',
+  url: function() {
+    return 'https://' + document.location.host + '/api/quotas/';
+  },
   idAttribute: 'guid',
   defaults: {
     'guid': undefined,
