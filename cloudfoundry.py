@@ -53,9 +53,11 @@ class CloudFoundry:
 
     def get_quotas(self):
         """ Get quota definitions """
-        req_iterator = self.yield_request(endpoint='/v2/quota_definitions')
-        for req in req_iterator:
-            yield req
+        quotas_gen = self.yield_request(endpoint='/v2/quota_definitions')
+        for quota_bundle in quotas_gen:
+            if 'resources' in quota_bundle:
+                for quota in quota_bundle['resources']:
+                    yield quota
 
     def get_orgs(self):
         """ Get org data """

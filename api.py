@@ -3,32 +3,8 @@ import csv
 import os
 
 from sqlalchemy import func
-from models import Service, QuotaData, Quota
+from models import QuotaData, Quota
 from quotas import db
-
-
-class ServiceResource(Service):
-
-    def details(self):
-        """ Displays Service in dict format """
-        return {
-            'quota_guid': self.quota,
-            'date_collected': str(self.date_collected),
-            'guid': self.guid,
-            'instance_name': self.instance_name,
-            'label': self.label,
-            'provider': self.provider,
-        }
-
-    @classmethod
-    def aggregate(cls, quota_guid, start_date=None, end_date=None):
-        """ Counts the number of days a Service has been active """
-        q = db.session.query(
-            cls.label, cls.guid, func.count(cls.date_collected))
-        if start_date and end_date:
-            q = q.filter(cls.date_collected.between(start_date, end_date))
-        q = q.filter_by(quota=quota_guid).group_by(cls.guid, cls.label)
-        return q.all()
 
 
 class QuotaDataResource(QuotaData):
@@ -103,22 +79,17 @@ class QuotaResource(Quota):
         """ Displays Quota in dict format with data details """
         memory_data = self.foreign_key_preparer(
             model=QuotaDataResource, start_date=start_date, end_date=end_date)
-        services = self.foreign_key_preparer(
-            model=ServiceResource, start_date=start_date, end_date=end_date)
         return {
             'guid': self.guid,
             'name': self.name,
             'created_at': str(self.created_at),
             'updated_at': str(self.updated_at),
             'memory': memory_data,
-            'services': services
         }
 
     def data_aggregates(self, start_date=None, end_date=None):
         """ Displays Quota in dict format with data details """
         memory_data = QuotaDataResource.aggregate(
-            quota_guid=self.guid, start_date=start_date, end_date=end_date)
-        services = ServiceResource.aggregate(
             quota_guid=self.guid, start_date=start_date, end_date=end_date)
         return {
             'guid': self.guid,
@@ -126,7 +97,6 @@ class QuotaResource(Quota):
             'created_at': str(self.created_at),
             'updated_at': str(self.updated_at),
             'memory': self.prepare_memory_data(memory_data),
-            'services': services,
             'cost': self.get_mem_cost(memory_data)
         }
 
