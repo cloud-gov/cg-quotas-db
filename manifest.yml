@@ -1,7 +1,7 @@
 ---
 # all applications use these settings and services
-memory: 512m
+memory: 1G
 applications:
-- name: quotas
+- name: quotas-staging
   buildpack: https://github.com/ddollar/heroku-buildpack-multi.git
   stack: cflinuxfs2
