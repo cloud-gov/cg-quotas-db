@@ -6,6 +6,10 @@ from sqlalchemy import func
 from models import QuotaData, Quota
 from quotas import db
 
+def or_zero(number):
+    if not number:
+        return 0
+    return number
 
 class QuotaDataResource(QuotaData):
 
@@ -27,6 +31,7 @@ class QuotaDataResource(QuotaData):
         if start_date and end_date:
             q = q.filter(cls.date_collected.between(start_date, end_date))
         q = q.filter_by(quota=quota_guid).group_by(cls.memory_limit)
+        print(q.all())
         return q.all()
 
 
@@ -41,20 +46,21 @@ class QuotaResource(Quota):
         data = data.order_by(model.date_collected).all()
         return [item.details() for item in data]
 
+
     @staticmethod
     def get_mem_cost(data):
         """ Calculate the cost of services currently contains a
         hard-coded cost for the short-term """
         if data:
             mb_cost = os.getenv('MB_COST_PER_DAY', 0.0033)
-            return sum([mem[0] * mem[1] * mb_cost for mem in data])
+            return sum([or_zero(mem[0]) * mem[1] * mb_cost for mem in data])
         return 0
 
     @staticmethod
     def prepare_memory_data(data):
         """ Given a memory array converts it to a more expressive dict
         [[1875, 14]] -> [{'size': 1875, 'days': 14}] """
-        return [{'size': memory[0], 'days': memory[1]} for memory in data]
+        return [{'size': or_zero(memory[0]), 'days': memory[1]} for memory in data]
 
     @staticmethod
     def prepare_csv_row(row):

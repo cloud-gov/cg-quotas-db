@@ -4,7 +4,6 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import datetime
 from flask import Flask, Response, jsonify, request
 from flask.ext.sqlalchemy import SQLAlchemy
-from auth import requires_auth
 
 app = Flask(__name__, static_url_path='')
 app.config.from_object(os.environ['APP_SETTINGS'])
@@ -22,13 +21,11 @@ from api import QuotaResource
 
 
 @app.route("/", methods=['GET'])
-@requires_auth
 def index():
     return app.send_static_file("index.html")
 
 
 @app.route("/api/quotas/", methods=['GET'])
-@requires_auth
 def api_all_dates():
     """ Endpoint that lists all quotas with details between
     two specific dates """
@@ -41,7 +38,6 @@ def api_all_dates():
 
 
 @app.route("/api/quotas/<guid>/", methods=['GET'])
-@requires_auth
 def api_one_dates(guid):
     """ Endpoint that lists one quota details limited by date """
     start_date = request.args.get('since')
@@ -55,7 +51,6 @@ def api_one_dates(guid):
 
 
 @app.route('/quotas.csv')
-@requires_auth
 def download_quotas():
     """ Route for downloading quotas """
     start_date = request.args.get('since')
