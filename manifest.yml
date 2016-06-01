@@ -5,3 +5,8 @@ applications:
 - name: quotas
   buildpack: https://github.com/ddollar/heroku-buildpack-multi.git
   stack: cflinuxfs2
+  command: ./cf-startup.sh
+  services:
+  - rds-cg-quotas-db
+  env:
+    NPM_CONFIG_PRODUCTION: false

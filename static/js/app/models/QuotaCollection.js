@@ -5,7 +5,7 @@ var _ = require('underscore');
 var QuotaModel = require('./QuotaModel');
 
 var QuotaCollection = Backbone.Collection.extend({
-  url: '/api/quotas',
+  url: '/api/quotas/',
   model: QuotaModel,
   initialize: function initialize () {
     this.fetch();

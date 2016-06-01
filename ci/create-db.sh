@@ -6,5 +6,5 @@ cf login -a $CF_API_URL -u $CF_DEPLOY_USERNAME -p $CF_DEPLOY_PASSWORD -o $CF_ORG
 
 # Create database service instance if not exists
 if ! cf service $SERVICE_NAME ; then
-  cf create-service aws-rds micro-psql $SERVICE_NAME
+  cf create-service aws-rds $SERVICE_PLAN $SERVICE_NAME
 fi

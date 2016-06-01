@@ -16,7 +16,8 @@ pip install -r requirements.txt
 ```
 export APP_SETTINGS="config.DevelopmentConfig"
 export DATABASE_URL="sqlite:///dev.db"
-export CF_URL="<<Cloud Foundry URL>>"
+export CF_API_URL="<<Cloud Foundry API URL>>"
+export CF_UAA_URL="<<Cloud Foundry UAA URL>>"
 export CF_USERNAME="<<Username>>"
 export CF_PASSWORD="<<Password>>"
 export SECRET_KEY="<<Secret Key>>"
@@ -64,7 +65,7 @@ python manage.py runserver
 
 ### Cloud Foundry
 ```
-cf push -c "bash cf_commands.sh"
+cf push
 ```
 
 ### Authentication

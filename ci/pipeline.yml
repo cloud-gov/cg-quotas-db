@@ -8,8 +8,9 @@ jobs:
     file: cg-quotas-db/ci/run-tests.yml
   - task: create-db
     file: cg-quotas-db/ci/create-db.yml
-    parameters:
+    params:
       SERVICE_NAME: rds-cg-quotas-db
+      SERVICE_PLAN: shared-psql
       CF_API_URL: {{cf-api-url}}
       CF_DEPLOY_USERNAME: {{cf-deploy-username}}
       CF_DEPLOY_PASSWORD: {{cf-deploy-password}}
@@ -18,10 +19,12 @@ jobs:
   - put: deploy-cg-quotas-db
     params:
       manifest: cg-quotas-db/manifest.yml
+      path: cg-quotas-db
       current_app_name: quotas
       environment_variables:
         APP_SETTINGS: config.ProductionConfig
-        CF_URL: {{cf-uaa-base-url}}
+        CF_API_URL: {{cf-api-url}}
+        CF_UAA_URL: {{cf-uaa-url}}
         CF_USERNAME: {{cf-uaa-username}}
         CF_PASSWORD: {{cf-uaa-password}}
         SECRET_KEY: {{secret-key}}
