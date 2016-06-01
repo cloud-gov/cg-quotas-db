@@ -1,0 +1,75 @@
+---
+jobs:
+- name: push-cg-quotas-db
+  plan:
+  - get: cg-quotas-db
+    trigger: true
+  - task: run-tests
+    file: cg-quotas-db/ci/run-tests.yml
+  - task: create-db
+    file: cg-quotas-db/ci/create-db.yml
+    parameters:
+      SERVICE_NAME: rds-cg-quotas-db
+      CF_API_URL: {{cf-api-url}}
+      CF_DEPLOY_USERNAME: {{cf-deploy-username}}
+      CF_DEPLOY_PASSWORD: {{cf-deploy-password}}
+      CF_ORGANIZATION: {{cf-organization}}
+      CF_SPACE: {{cf-space}}
+  - put: deploy-cg-quotas-db
+    params:
+      manifest: cg-quotas-db/manifest.yml
+      current_app_name: quotas
+      environment_variables:
+        APP_SETTINGS: config.ProductionConfig
+        CF_URL: {{cf-uaa-base-url}}
+        CF_USERNAME: {{cf-uaa-username}}
+        CF_PASSWORD: {{cf-uaa-password}}
+        SECRET_KEY: {{secret-key}}
+        SECRET_USERNAME: {{basic-auth-username}}
+        SECRET_PASSWORD: {{basic-auth-password}}
+    on_failure:
+      put: slack
+      params:
+        text: |
+          :x: FAILED to deploy cg-quotas-db on {{cf-api-url}}
+          <https://ci.cloud.gov/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+        channel: {{slack-channel}}
+        username: {{slack-username}}
+        icon_url: {{slack-icon-url}}
+    on_success:
+      put: slack
+      params:
+        text: |
+          :white_check_mark: Successfully deployed cg-quotas-db on {{cf-api-url}}
+          <https://ci.cloud.gov/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+        channel: {{slack-channel}}
+        username: {{slack-username}}
+        icon_url: {{slack-icon-url}}
+
+resources:
+- name: cg-quotas-db
+  type: git
+  source:
+    uri: {{cg-quotas-db-git-url}}
+    branch: {{cg-quotas-db-git-branch}}
+
+- name: deploy-cg-quotas-db
+  type: cf
+  source:
+    api: {{cf-api-url}}
+    username: {{cf-deploy-username}}
+    password: {{cf-deploy-password}}
+    organization: {{cf-organization}}
+    space: {{cf-space}}
+    skip_cert_check: false
+
+- name: slack
+  type: slack-notification
+  source:
+    url: {{slack-webhook-url}}
+
+resource_types:
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource

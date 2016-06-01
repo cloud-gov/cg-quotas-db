@@ -5,3 +5,5 @@ __pycache__/
 .coverage
 static/dist/
 node_modules/
+
+ci/credentials.yml

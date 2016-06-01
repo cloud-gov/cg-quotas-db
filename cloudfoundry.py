@@ -15,7 +15,7 @@ class CloudFoundry:
 
     def request_token(self):
         """ Request a token from service """
-        token_url = 'https://uaa.%s/oauth/token' % self.url
+        token_url = 'https://%s/oauth/token' % self.url
         headers = {
             'accept': 'application/json',
             'authorization': 'Basic Y2Y6'
