@@ -1,40 +1,44 @@
 ---
 jobs:
-- name: push-cg-quotas-db
+- name: push-cg-quotas-db-staging
   plan:
-  - get: cg-quotas-db
+  - get: cg-quotas-db-staging
     trigger: true
   - task: run-tests
-    file: cg-quotas-db/ci/run-tests.yml
+    file: cg-quotas-db-staging/ci/run-tests.yml
+    input_mapping:
+      cg-quotas-db: cg-quotas-db-staging
   - task: create-db
-    file: cg-quotas-db/ci/create-db.yml
+    file: cg-quotas-db-staging/ci/create-db.yml
+    input_mapping:
+      cg-quotas-db: cg-quotas-db-staging
     params:
       SERVICE_NAME: rds-cg-quotas-db
       SERVICE_PLAN: shared-psql
-      CF_API_URL: {{cf-api-url}}
-      CF_DEPLOY_USERNAME: {{cf-deploy-username}}
-      CF_DEPLOY_PASSWORD: {{cf-deploy-password}}
-      CF_ORGANIZATION: {{cf-organization}}
-      CF_SPACE: {{cf-space}}
-  - put: deploy-cg-quotas-db
+      CF_API_URL: {{staging-cf-api-url}}
+      CF_DEPLOY_USERNAME: {{staging-cf-deploy-username}}
+      CF_DEPLOY_PASSWORD: {{staging-cf-deploy-password}}
+      CF_ORGANIZATION: {{staging-cf-organization}}
+      CF_SPACE: {{staging-cf-space}}
+  - put: deploy-cg-quotas-db-staging
     params:
-      manifest: cg-quotas-db/manifest.yml
-      path: cg-quotas-db
+      manifest: cg-quotas-db-staging/manifest.yml
+      path: cg-quotas-db-staging
       current_app_name: quotas
       environment_variables:
         APP_SETTINGS: config.ProductionConfig
-        CF_API_URL: {{cf-api-url}}
-        CF_UAA_URL: {{cf-uaa-url}}
-        CF_USERNAME: {{cf-uaa-username}}
-        CF_PASSWORD: {{cf-uaa-password}}
-        SECRET_KEY: {{secret-key}}
-        SECRET_USERNAME: {{basic-auth-username}}
-        SECRET_PASSWORD: {{basic-auth-password}}
+        CF_API_URL: {{staging-cf-api-url}}
+        CF_UAA_URL: {{staging-cf-uaa-url}}
+        CF_USERNAME: {{staging-cf-uaa-username}}
+        CF_PASSWORD: {{staging-cf-uaa-password}}
+        SECRET_KEY: {{staging-secret-key}}
+        SECRET_USERNAME: {{staging-basic-auth-username}}
+        SECRET_PASSWORD: {{staging-basic-auth-password}}
     on_failure:
       put: slack
       params:
         text: |
-          :x: FAILED to deploy cg-quotas-db on {{cf-api-url}}
+          :x: FAILED to deploy cg-quotas-db on {{staging-cf-api-url}}
           <https://ci.cloud.gov/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
         channel: {{slack-channel}}
         username: {{slack-username}}
@@ -43,27 +47,96 @@ jobs:
       put: slack
       params:
         text: |
-          :white_check_mark: Successfully deployed cg-quotas-db on {{cf-api-url}}
+          :white_check_mark: Successfully deployed cg-quotas-db on {{staging-cf-api-url}}
+          <https://ci.cloud.gov/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+        channel: {{slack-channel}}
+        username: {{slack-username}}
+        icon_url: {{slack-icon-url}}
+
+- name: push-cg-quotas-db-prod
+  plan:
+  - get: cg-quotas-db-prod
+    trigger: true
+  - task: run-tests
+    file: cg-quotas-db-prod/ci/run-tests.yml
+    input_mapping:
+      cg-quotas-db: cg-quotas-db-prod
+  - task: create-db
+    file: cg-quotas-db-prod/ci/create-db.yml
+    input_mapping:
+      cg-quotas-db: cg-quotas-db-prod
+    params:
+      SERVICE_NAME: rds-cg-quotas-db
+      SERVICE_PLAN: shared-psql
+      CF_API_URL: {{prod-cf-api-url}}
+      CF_DEPLOY_USERNAME: {{prod-cf-deploy-username}}
+      CF_DEPLOY_PASSWORD: {{prod-cf-deploy-password}}
+      CF_ORGANIZATION: {{prod-cf-organization}}
+      CF_SPACE: {{prod-cf-space}}
+  - put: deploy-cg-quotas-db-prod
+    params:
+      manifest: cg-quotas-db-prod/manifest.yml
+      path: cg-quotas-db-prod
+      current_app_name: quotas
+      environment_variables:
+        APP_SETTINGS: config.ProductionConfig
+        CF_API_URL: {{prod-cf-api-url}}
+        CF_UAA_URL: {{prod-cf-uaa-url}}
+        CF_USERNAME: {{prod-cf-uaa-username}}
+        CF_PASSWORD: {{prod-cf-uaa-password}}
+        SECRET_KEY: {{prod-secret-key}}
+        SECRET_USERNAME: {{prod-basic-auth-username}}
+        SECRET_PASSWORD: {{prod-basic-auth-password}}
+    on_failure:
+      put: slack
+      params:
+        text: |
+          :x: FAILED to deploy cg-quotas-db on {{prod-cf-api-url}}
+          <https://ci.cloud.gov/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+        channel: {{slack-channel}}
+        username: {{slack-username}}
+        icon_url: {{slack-icon-url}}
+    on_success:
+      put: slack
+      params:
+        text: |
+          :white_check_mark: Successfully deployed cg-quotas-db on {{prod-cf-api-url}}
           <https://ci.cloud.gov/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
         channel: {{slack-channel}}
         username: {{slack-username}}
         icon_url: {{slack-icon-url}}
 
 resources:
-- name: cg-quotas-db
+- name: cg-quotas-db-staging
   type: git
   source:
     uri: {{cg-quotas-db-git-url}}
-    branch: {{cg-quotas-db-git-branch}}
+    branch: {{cg-quotas-db-git-staging-branch}}
 
-- name: deploy-cg-quotas-db
+- name: cg-quotas-db-prod
+  type: git
+  source:
+    uri: {{cg-quotas-db-git-url}}
+    branch: {{cg-quotas-db-git-prod-branch}}
+
+- name: deploy-cg-quotas-db-staging
   type: cf
   source:
-    api: {{cf-api-url}}
-    username: {{cf-deploy-username}}
-    password: {{cf-deploy-password}}
-    organization: {{cf-organization}}
-    space: {{cf-space}}
+    api: {{staging-cf-api-url}}
+    username: {{staging-cf-deploy-username}}
+    password: {{staging-cf-deploy-password}}
+    organization: {{staging-cf-organization}}
+    space: {{staging-cf-space}}
+    skip_cert_check: false
+
+- name: deploy-cg-quotas-db-prod
+  type: cf
+  source:
+    api: {{prod-cf-api-url}}
+    username: {{prod-cf-deploy-username}}
+    password: {{prod-cf-deploy-password}}
+    organization: {{prod-cf-organization}}
+    space: {{prod-cf-space}}
     skip_cert_check: false
 
 - name: slack
