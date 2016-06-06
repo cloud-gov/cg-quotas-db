@@ -13,6 +13,7 @@ jobs:
     input_mapping:
       cg-quotas-db: cg-quotas-db-staging
     params:
+      # Note: Must match service name in manifest
       SERVICE_NAME: rds-cg-quotas-db
       SERVICE_PLAN: shared-psql
       CF_API_URL: {{staging-cf-api-url}}

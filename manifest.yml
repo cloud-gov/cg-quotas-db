@@ -9,4 +9,5 @@ applications:
   services:
   - rds-cg-quotas-db
   env:
+    # Install `devDependencies`
     NPM_CONFIG_PRODUCTION: false

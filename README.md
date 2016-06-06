@@ -98,3 +98,10 @@ If the `until` parameter is not present the date will default to the current dat
 Examples
 - ex. `/api/quotas/?since=2013-01-01`
 - ex. `/api/quotas/:guid/?since=2013-01-01&until=2014-01-01`
+
+### Concourse deployment
+
+```bash
+cp ./ci/credentials.example.yml ./ci/credentials.yml
+fly -t <my-concourse> set-pipeline deploy-quotas-db -c ./ci/pipeline.yml -l ./ci/credentials.yml
+```
