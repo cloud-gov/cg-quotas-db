@@ -67,7 +67,8 @@ def load_quotas(cf_api):
 def load_data():
     """ Starts the data loading process """
     cf_api = CloudFoundry(
-        url=os.getenv('CF_URL'),
+        api_url=os.getenv('CF_API_URL'),
+        uaa_url=os.getenv('CF_UAA_URL'),
         username=os.getenv('CF_USERNAME'),
         password=os.getenv('CF_PASSWORD'))
     logging.info('Starting Data Update')

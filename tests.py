@@ -129,7 +129,8 @@ class CloudFoundryTest(unittest.TestCase):
     @mock_token
     def setUp(self):
         self.cf = CloudFoundry(
-            url='api.test.com',
+            uaa_url='login.test.com',
+            api_url='api.test.com',
             username='mockusername@mock.com',
             password='******')
 
@@ -137,7 +138,7 @@ class CloudFoundryTest(unittest.TestCase):
     def test_init(self):
         """ Test that CloudFoundry object initializes properly """
 
-        self.assertEqual(self.cf.url, 'api.test.com')
+        self.assertEqual(self.cf.api_url, 'api.test.com')
         self.assertEqual(self.cf.username, 'mockusername@mock.com')
         self.assertEqual(self.cf.password, '******')
         self.assertEqual(self.cf.token['access_token'], '999')

@@ -16,7 +16,8 @@ pip install -r requirements.txt
 ```
 export APP_SETTINGS="config.DevelopmentConfig"
 export DATABASE_URL="sqlite:///dev.db"
-export CF_URL="<<Cloud Foundry URL>>"
+export CF_API_URL="<<Cloud Foundry API URL>>"
+export CF_UAA_URL="<<Cloud Foundry UAA URL>>"
 export CF_USERNAME="<<Username>>"
 export CF_PASSWORD="<<Password>>"
 export SECRET_KEY="<<Secret Key>>"
@@ -64,7 +65,7 @@ python manage.py runserver
 
 ### Cloud Foundry
 ```
-cf push -c "bash cf_commands.sh"
+cf push
 ```
 
 ### Authentication
@@ -97,3 +98,10 @@ If the `until` parameter is not present the date will default to the current dat
 Examples
 - ex. `/api/quotas/?since=2013-01-01`
 - ex. `/api/quotas/:guid/?since=2013-01-01&until=2014-01-01`
+
+### Concourse deployment
+
+```bash
+cp ./ci/credentials.example.yml ./ci/credentials.yml
+fly -t <my-concourse> set-pipeline deploy-quotas-db -c ./ci/pipeline.yml -l ./ci/credentials.yml
+```

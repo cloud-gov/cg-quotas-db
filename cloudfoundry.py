@@ -6,16 +6,17 @@ class CloudFoundry:
 
     """ Script for connecting to a Clound Foundry url and requesting data """
 
-    def __init__(self, url, username, password):
+    def __init__(self, api_url, uaa_url, username, password):
 
-        self.url = url
+        self.api_url = api_url
+        self.uaa_url = uaa_url
         self.username = username
         self.password = password
         self.request_token()
 
     def request_token(self):
         """ Request a token from service """
-        token_url = 'https://uaa.%s/oauth/token' % self.url
+        token_url = '%s/oauth/token' % self.uaa_url
         headers = {
             'accept': 'application/json',
             'authorization': 'Basic Y2Y6'
@@ -39,7 +40,7 @@ class CloudFoundry:
     def make_request(self, endpoint):
         """ Make request to specific endpoint """
         token = self.prepare_token()
-        url = 'https://api.{0}{1}'.format(self.url, endpoint)
+        url = '{0}{1}'.format(self.api_url, endpoint)
         headers = {'authorization': 'bearer ' + token}
         req = requests.get(url=url, headers=headers)
         return req

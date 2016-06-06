@@ -1,4 +1,7 @@
 #!/bin/bash
+
+set -e -x
+
 echo "------ Starting APP ------"
 if [ $CF_INSTANCE_INDEX = "0" ]; then
     echo "----- Apply Migrations -----"
