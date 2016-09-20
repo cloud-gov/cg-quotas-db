@@ -1,3 +1,5 @@
+[![Code Climate](https://codeclimate.com/github/18F/cg-quotas-db/badges/gpa.svg)](https://codeclimate.com/github/18F/cg-quotas-db)
+
 # Quota Database App
 There are two distinct components that form the basis of this repository. At some point in the future we might split them out, for now they are going to stay together.
 
