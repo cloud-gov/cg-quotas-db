@@ -23,10 +23,12 @@ jobs:
       CF_DEPLOY_PASSWORD: {{staging-cf-deploy-password}}
       CF_ORGANIZATION: {{staging-cf-organization}}
       CF_SPACE: {{staging-cf-space}}
+  - task: build-assets
+    file: cg-quotas-db-src/ci/build-assets.yml
   - put: deploy-cg-quotas-db-staging
     params:
-      manifest: cg-quotas-db-src/manifest.yml
-      path: cg-quotas-db-src
+      manifest: cg-quotas-db-src-assets/manifest.yml
+      path: cg-quotas-db-src-assets
       current_app_name: quotas
       environment_variables:
         APP_SETTINGS: config.ProductionConfig
@@ -71,10 +73,12 @@ jobs:
       CF_DEPLOY_PASSWORD: {{prod-cf-deploy-password}}
       CF_ORGANIZATION: {{prod-cf-organization}}
       CF_SPACE: {{prod-cf-space}}
+  - task: build-assets
+    file: cg-quotas-db-src/ci/build-assets.yml
   - put: deploy-cg-quotas-db-prod
     params:
-      manifest: cg-quotas-db-src/manifest.yml
-      path: cg-quotas-db-src
+      manifest: cg-quotas-db-src-assets/manifest.yml
+      path: cg-quotas-db-src-assets
       current_app_name: quotas
       environment_variables:
         APP_SETTINGS: config.ProductionConfig
