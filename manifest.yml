@@ -3,7 +3,7 @@
 memory: 512m
 applications:
 - name: quotas
-  buildpack: https://github.com/ddollar/heroku-buildpack-multi.git
+  buildpack: https://bitbucket.org/cf-utilities/cf-buildpack-multi
   stack: cflinuxfs2
   command: ./cf-startup.sh
   services:
