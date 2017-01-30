@@ -3,6 +3,7 @@
 memory: 512m
 applications:
 - name: quotas
+  instances: 2
   buildpack: python_buildpack
   stack: cflinuxfs2
   command: ./cf-startup.sh
