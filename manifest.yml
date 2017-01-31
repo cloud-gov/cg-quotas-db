@@ -1,6 +1,6 @@
 ---
 # all applications use these settings and services
-memory: 512m
+memory: 256M
 applications:
 - name: quotas
   instances: 2
