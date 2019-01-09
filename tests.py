@@ -1,6 +1,6 @@
 # Extral Imports
 from unittest import mock
-from flask.ext.testing import TestCase
+from flask_testing import TestCase
 import base64
 import copy
 import datetime

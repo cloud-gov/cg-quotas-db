@@ -3,11 +3,12 @@ import os
 from apscheduler.schedulers.background import BackgroundScheduler
 import datetime
 from flask import Flask, Response, jsonify, request
-from flask.ext.sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy
 from auth import requires_auth
 
 app = Flask(__name__, static_url_path='')
 app.config.from_object(os.environ['APP_SETTINGS'])
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
