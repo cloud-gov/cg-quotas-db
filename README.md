@@ -1,3 +1,7 @@
+# Deprecation Warning
+
+This repository and it's code are considered deprecated by the cloud.gov team. We no longer maintain this code base nor support it.
+
 [![Code Climate](https://codeclimate.com/github/18F/cg-quotas-db/badges/gpa.svg)](https://codeclimate.com/github/18F/cg-quotas-db)
 
 # Quota Database App
